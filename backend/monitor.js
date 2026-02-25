@@ -81,6 +81,7 @@ function startMonitoring(io) {
                 timestamp
             };
 
+            console.log(`Ping para ${target.name} (${target.ip}): ${result.alive ? 'EXITOSO (' + result.time + 'ms)' : 'FALLIDO'}`);
             io.emit('ping-result', payload);
 
             if (previousStatus[target.id] !== undefined && previousStatus[target.id] !== result.alive) {

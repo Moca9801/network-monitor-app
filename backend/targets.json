@@ -1,14 +1,20 @@
 [
-    {
-        "id": "1",
-        "name": "Google DNS",
-        "ip": "8.8.8.8",
-        "description": "Primary DNS"
-    },
-    {
-        "id": "2",
-        "name": "Cloudflare DNS",
-        "ip": "1.1.1.1",
-        "description": "Speedy DNS"
-    }
+  {
+    "id": "1",
+    "name": "Google DNS",
+    "ip": "8.8.8.8",
+    "description": "Primary DNS"
+  },
+  {
+    "id": "2",
+    "name": "Cloudflare DNS",
+    "ip": "1.1.1.1",
+    "description": "Speedy DNS"
+  },
+  {
+    "name": "TAURUS CDJ",
+    "ip": "172.50.1.254",
+    "description": "FIREWALL",
+    "id": "1772046745308"
+  }
 ]
