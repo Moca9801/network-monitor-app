@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const { startMonitoring } = require('./monitor');
+const { startMonitoring, getTargets, saveTargets } = require('./monitor');
 
 const app = express();
 app.use(cors());
@@ -15,28 +15,45 @@ const io = new Server(server, {
   }
 });
 
-// Stateless: IPs to monitor (could be moved to an env var or a config file)
-const IPS_TO_MONITOR = [
-  { id: 1, name: 'Google DNS', ip: '8.8.8.8' },
-  { id: 2, name: 'Cloudflare DNS', ip: '1.1.1.1' },
-  { id: 3, name: 'Localhost', ip: '127.0.0.1' }
-];
-
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
-  
-  // Send initial list
-  socket.emit('initial-targets', IPS_TO_MONITOR);
+  console.log('Cliente conectado:', socket.id);
+
+  // Enviar lista inicial de objetivos
+  socket.emit('initial-targets', getTargets());
+
+  // Agregar nuevo objetivo
+  socket.on('add-target', (newTarget) => {
+    const targets = getTargets();
+    const id = Date.now().toString();
+    const targetWithId = { ...newTarget, id };
+    targets.push(targetWithId);
+    saveTargets(targets);
+
+    // Notificar a todos los clientes de la nueva lista
+    io.emit('initial-targets', targets);
+    // Reiniciar monitoreo para incluir el nuevo
+    startMonitoring(io);
+  });
+
+  // Eliminar objetivo
+  socket.on('remove-target', (id) => {
+    let targets = getTargets();
+    targets = targets.filter(t => t.id !== id);
+    saveTargets(targets);
+
+    io.emit('initial-targets', targets);
+    startMonitoring(io);
+  });
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    console.log('Cliente desconectado:', socket.id);
   });
 });
 
-// Start monitoring loop
-startMonitoring(io, IPS_TO_MONITOR);
+// Iniciar loop de monitoreo
+startMonitoring(io);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
+  console.log(`Backend de monitoreo corriendo en puerto ${PORT}`);
 });
