@@ -25,7 +25,19 @@
     "type": "Servidor",
     "id": "1772048964740",
     "userId": "1772048027640",
-    "order": 0
+    "order": 0,
+    "alive": true,
+    "latency": 10,
+    "stats": {
+      "sq": 1095,
+      "rp": 1094,
+      "lp": 1,
+      "ppl": "0.1",
+      "min": "3.0",
+      "max": "75.0",
+      "avg": "8.1"
+    },
+    "timestamp": "2026-02-25T20:37:59.131Z"
   },
   {
     "name": "Servidor de impresoras",
@@ -37,5 +49,16 @@
     "userId": "1772048027640",
     "audioAlert": true,
     "order": 1
+  },
+  {
+    "name": "GATEWAY TELEMX",
+    "ip": "201.116.233.1",
+    "description": "",
+    "category": "CJJ",
+    "type": "Servidor",
+    "id": "1772051914682",
+    "userId": "1772048027640",
+    "audioAlert": true,
+    "order": 2
   }
 ]
