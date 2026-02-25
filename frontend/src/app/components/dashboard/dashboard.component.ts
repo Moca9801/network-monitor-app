@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { SocketService } from '../../services/socket.service';
 import { StorageService } from '../../services/storage.service';
 import { Subscription } from 'rxjs';
@@ -8,13 +9,21 @@ import { LatencyChartComponent } from '../latency-chart/latency-chart.component'
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule, LatencyChartComponent],
+    imports: [CommonModule, FormsModule, LatencyChartComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit, OnDestroy {
     targets: any[] = [];
     logs: any[] = [];
+
+    // Form model
+    newServer = {
+        name: '',
+        ip: '',
+        description: ''
+    };
+
     private subscriptions: Subscription = new Subscription();
 
     constructor(
@@ -27,7 +36,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         this.subscriptions.add(
             this.socketService.targets$.subscribe(targets => {
-                this.targets = targets.map(t => ({ ...t, alive: null, latency: 0 }));
+                // Preserve previous status if possible to avoid flickering online/offline
+                this.targets = targets.map(t => {
+                    const existing = this.targets.find(old => old.id === t.id);
+                    return { ...t, alive: existing ? existing.alive : null, latency: existing ? existing.latency : 0 };
+                });
             })
         );
 
@@ -35,7 +48,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.socketService.getPingResults().subscribe(result => {
                 const index = this.targets.findIndex(t => t.id === result.id);
                 if (index !== -1) {
-                    // Check for state change for logging
                     if (this.targets[index].alive !== null && this.targets[index].alive !== result.alive) {
                         const logEntry = {
                             name: result.name,
@@ -47,8 +59,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
                     }
 
                     this.targets[index] = { ...this.targets[index], ...result };
-
-                    // Save history for chart
                     this.storageService.saveHistory(result.ip, {
                         latency: result.latency,
                         timestamp: result.timestamp
@@ -56,6 +66,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 }
             })
         );
+    }
+
+    addServer() {
+        if (this.newServer.name && this.newServer.ip) {
+            this.socketService.addTarget(this.newServer);
+            this.newServer = { name: '', ip: '', description: '' };
+        }
+    }
+
+    removeServer(id: string) {
+        if (confirm('¿Estás seguro de que deseas dejar de monitorear este servidor?')) {
+            this.socketService.removeTarget(id);
+        }
     }
 
     ngOnDestroy() {

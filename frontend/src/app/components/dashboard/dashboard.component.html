@@ -1,67 +1,145 @@
-<div class="p-6 max-w-6xl mx-auto">
-  <header class="mb-10 flex justify-between items-center bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-2xl">
+<div class="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+  <!-- Header -->
+  <header
+    class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 shadow-2xl gap-4">
     <div>
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Network Uptime Monitor</h1>
-      <p class="text-slate-400">Monitoreo IcMP en tiempo real</p>
+      <h1
+        class="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent italic">
+        NETWORK MONITOR
+      </h1>
+      <p class="text-slate-500 font-medium tracking-wide">Panel de Monitoreo ICMP en Tiempo Real</p>
     </div>
-    <div class="text-right">
-      <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-sm border border-emerald-500/20">Backend Online</span>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 px-4 py-2 bg-slate-950 rounded-full border border-slate-800">
+        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
+        <span class="text-xs font-bold uppercase tracking-tighter text-slate-400">Sistema Activo</span>
+      </div>
     </div>
   </header>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-    <div *ngFor="let target of targets" class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl transition-all hover:border-slate-700">
-      <div class="flex justify-between items-start mb-4">
-        <div>
-          <h2 class="text-xl font-semibold">{{ target.name }}</h2>
-          <code class="text-xs text-slate-500">{{ target.ip }}</code>
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <!-- Formulario Lateral -->
+    <aside class="lg:col-span-1 space-y-6">
+      <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+        <h3 class="text-lg font-bold mb-4 text-blue-400 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Nuevo Servidor
+        </h3>
+        <form (submit)="addServer()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre</label>
+            <input name="name" [(ngModel)]="newServer.name" type="text" placeholder="Ej: Router Principal"
+              class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Dirección IP</label>
+            <input name="ip" [(ngModel)]="newServer.ip" type="text" placeholder="0.0.0.0"
+              class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Descripción</label>
+            <textarea name="description" [(ngModel)]="newServer.description" placeholder="Opcional..." rows="2"
+              class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"></textarea>
+          </div>
+          <button type="submit" [disabled]="!newServer.name || !newServer.ip"
+            class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-blue-900/20">
+            Añadir Servidor
+          </button>
+        </form>
+      </div>
+
+      <!-- Stats Breves -->
+      <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+        <h4 class="text-xs font-bold text-slate-500 uppercase mb-4">Resumen</h4>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400">Total Monitoreados:</span>
+          <span class="font-bold text-white">{{ targets.length }}</span>
         </div>
-        <div [ngClass]="{'bg-emerald-500': target.alive, 'bg-red-500': target.alive === false, 'bg-slate-700': target.alive === null}" 
-             class="w-3 h-3 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] animate-pulse"></div>
       </div>
-      
-      <div class="flex justify-between items-center">
-        <span class="text-slate-400 text-sm">Latencia</span>
-        <span class="text-lg font-mono" [ngClass]="target.alive ? 'text-blue-400' : 'text-slate-600'">
-          {{ target.alive ? (target.latency | number:'1.0-2') + ' ms' : '--' }}
-        </span>
+    </aside>
+
+    <!-- Grid de Servidores -->
+    <main class="lg:col-span-3 space-y-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div *ngFor="let target of targets"
+          class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden group hover:border-slate-700 transition-all">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-6">
+              <div class="flex items-center gap-3">
+                <div
+                  [ngClass]="{'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]': target.alive, 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]': target.alive === false, 'bg-slate-700': target.alive === null}"
+                  class="w-3 h-3 rounded-full animate-pulse"></div>
+                <div>
+                  <h2 class="text-xl font-black text-slate-100 tracking-tight">{{ target.name }}</h2>
+                  <p class="text-xs font-mono text-slate-500">{{ target.ip }}</p>
+                </div>
+              </div>
+              <button (click)="removeServer(target.id)" class="text-slate-600 hover:text-red-400 transition-colors p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+
+            <div *ngIf="target.description" class="mb-6 p-3 bg-slate-950 rounded-lg text-xs text-slate-400 italic">
+              {{ target.description }}
+            </div>
+
+            <div class="flex justify-between items-end">
+              <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Latencia Actual</p>
+                <div class="text-3xl font-black text-blue-400 font-mono">
+                  {{ target.alive ? (target.latency | number:'1.0-1') + 'ms' : '--' }}
+                </div>
+              </div>
+              <div class="w-2/3 h-16">
+                <app-latency-chart [ip]="target.ip"></app-latency-chart>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="mt-4 pt-4 border-t border-slate-800">
-        <app-latency-chart [ip]="target.ip"></app-latency-chart>
-      </div>
-    </div>
-  </div>
-
-  <div class="bg-slate-900 rounded-xl border border-slate-800 shadow-xl overflow-hidden">
-    <div class="p-4 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
-      <h3 class="font-bold text-slate-300">Historial de Eventos</h3>
-      <span class="text-xs text-slate-500">Persistencia en localStorage</span>
-    </div>
-    <div class="max-h-60 overflow-y-auto">
-      <table class="w-full text-left text-sm">
-        <thead class="bg-slate-950 text-slate-500 uppercase text-[10px] tracking-wider sticky top-0">
-          <tr>
-            <th class="p-4">Servicio</th>
-            <th class="p-4">Estado</th>
-            <th class="p-4">Fecha y Hora</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-800">
-          <tr *ngFor="let log of logs" class="hover:bg-slate-800/30 transition-colors">
-            <td class="p-4 font-medium">{{ log.name }}</td>
-            <td class="p-4">
-              <span [ngClass]="log.status === 'Online' ? 'text-emerald-400' : 'text-red-400'">
-                {{ log.status }}
-              </span>
-            </td>
-            <td class="p-4 text-slate-500">{{ log.timestamp | date:'short' }}</td>
-          </tr>
-          <tr *ngIf="logs.length === 0">
-            <td colspan="3" class="p-10 text-center text-slate-600 italic">No hay eventos registrados aún.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <!-- Logs -->
+      <section class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+        <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+          <h3 class="font-black text-slate-300 tracking-wider text-sm uppercase">Logs de Eventos</h3>
+          <span
+            class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-1 rounded border border-indigo-500/20 font-bold">HISTORIAL
+            RECIENTE</span>
+        </div>
+        <div class="max-h-80 overflow-y-auto">
+          <table class="w-full text-left text-xs">
+            <tbody class="divide-y divide-slate-800">
+              <tr *ngFor="let log of logs" class="hover:bg-slate-800/20 transition-colors">
+                <td class="p-4">
+                  <div class="flex items-center gap-3">
+                    <span [ngClass]="log.status === 'Online' ? 'bg-emerald-500' : 'bg-red-500'"
+                      class="w-1.5 h-1.5 rounded-full"></span>
+                    <span class="font-bold text-slate-300">{{ log.name }}</span>
+                  </div>
+                </td>
+                <td class="p-4">
+                  <span [ngClass]="log.status === 'Online' ? 'text-emerald-400' : 'text-red-400'"
+                    class="font-black uppercase tracking-widest text-[10px]">
+                    {{ log.status }}
+                  </span>
+                </td>
+                <td class="p-4 text-slate-500 font-mono text-right">{{ log.timestamp | date:'HH:mm:ss dd/MM' }}</td>
+              </tr>
+              <tr *ngIf="logs.length === 0">
+                <td colspan="3" class="p-12 text-center text-slate-600 italic font-medium">No hay logs detectados
+                  todavía. Monitoreando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
   </div>
 </div>

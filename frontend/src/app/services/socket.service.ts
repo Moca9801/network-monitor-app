@@ -27,4 +27,12 @@ export class SocketService {
             });
         });
     }
+
+    addTarget(target: any) {
+        this.socket.emit('add-target', target);
+    }
+
+    removeTarget(id: string) {
+        this.socket.emit('remove-target', id);
+    }
 }

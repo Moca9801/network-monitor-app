@@ -1,0 +1,14 @@
+[
+    {
+        "id": "1",
+        "name": "Google DNS",
+        "ip": "8.8.8.8",
+        "description": "Primary DNS"
+    },
+    {
+        "id": "2",
+        "name": "Cloudflare DNS",
+        "ip": "1.1.1.1",
+        "description": "Speedy DNS"
+    }
+]

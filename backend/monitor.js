@@ -1,74 +1,99 @@
 const ping = require('ping');
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
 
-/**
- * Pings an IP address and returns status and latency.
- * @param {string} ip 
- * @returns {Promise<{alive: boolean, time: number}>}
- */
+const TARGETS_FILE = path.join(__dirname, 'targets.json');
+
+function getTargets() {
+    try {
+        const data = fs.readFileSync(TARGETS_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (err) {
+        return [];
+    }
+}
+
+function saveTargets(targets) {
+    fs.writeFileSync(TARGETS_FILE, JSON.stringify(targets, null, 2));
+}
+
 async function pingIP(ip) {
     try {
-        const res = await ping.promise.probe(ip, {
-            timeout: 10,
-        });
+        const res = await ping.promise.probe(ip, { timeout: 10 });
         return {
             alive: res.alive,
             time: res.time === 'unknown' ? 0 : parseFloat(res.time)
         };
     } catch (err) {
-        console.error(`Error pinging ${ip}:`, err);
         return { alive: false, time: 0 };
     }
 }
 
-/**
- * Sends a notification to a webhook (Mock implementation for Telegram/Slack).
- * @param {string} message 
- */
-function sendNotification(message) {
+async function sendNotification(message) {
     console.log(`[ALERTA]: ${message}`);
-    // In a real scenario, use axios.post(webhookUrl, { text: message })
+
+    const webhookUrl = process.env.NOTIFICATION_WEBHOOK;
+    if (!webhookUrl) return;
+
+    const data = JSON.stringify({ text: message });
+    const url = new URL(webhookUrl);
+
+    const options = {
+        hostname: url.hostname,
+        port: 443,
+        path: url.pathname + url.search,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': data.length
+        }
+    };
+
+    const req = https.request(options, (res) => {
+        res.on('data', () => { });
+    });
+
+    req.on('error', (e) => {
+        console.error(`Error en notificación: ${e.message}`);
+    });
+
+    req.write(data);
+    req.end();
 }
 
-/**
- * Main monitoring loop.
- * @param {object} io Socket.io server instance
- * @param {Array} targets IPs to monitor
- */
-function startMonitoring(io, targets) {
-    const previousStatus = {};
+let monitorInterval = null;
+const previousStatus = {};
 
+function startMonitoring(io) {
     const runPings = async () => {
-        console.log(`Running pings for ${targets.length} targets...`);
+        const targets = getTargets();
+        console.log(`Ejecutando pings para ${targets.length} servidores...`);
 
         for (const target of targets) {
             const result = await pingIP(target.ip);
             const timestamp = new Date().toISOString();
 
             const payload = {
-                id: target.id,
-                name: target.name,
-                ip: target.ip,
+                ...target,
                 alive: result.alive,
                 latency: result.time,
                 timestamp
             };
 
-            // Emit to all connected clients
             io.emit('ping-result', payload);
 
-            // Check for state changes to send alerts
             if (previousStatus[target.id] !== undefined && previousStatus[target.id] !== result.alive) {
-                const statusStr = result.alive ? 'RECUPERADO' : 'CAÍDO';
-                sendNotification(`Servicio ${target.name} (${target.ip}) está ${statusStr} a las ${timestamp}`);
+                const statusStr = result.alive ? '✅ RECUPERADO' : '❌ CAÍDO';
+                sendNotification(`Servicio: ${target.name}\nIP: ${target.ip}\nEstado: ${statusStr}\nFecha: ${timestamp}`);
             }
-
             previousStatus[target.id] = result.alive;
         }
     };
 
-    // Run immediately and then every 60s
+    if (monitorInterval) clearInterval(monitorInterval);
     runPings();
-    setInterval(runPings, 60000);
+    monitorInterval = setInterval(runPings, 60000);
 }
 
-module.exports = { startMonitoring };
+module.exports = { startMonitoring, getTargets, saveTargets };
