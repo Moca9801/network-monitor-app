@@ -1,0 +1,14 @@
+# Node
+node_modules/
+dist/
+.env
+
+# Angular
+.angular/
+.vscode/
+.idea/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
