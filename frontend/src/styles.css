@@ -2,6 +2,149 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Default Dark Theme (Existing style) */
+  --bg-main: #020617;
+  /* slate-950 */
+  --bg-card: #0f172a;
+  /* slate-900 */
+  --bg-input: #020617;
+  --border-color: #1e293b;
+  /* slate-800 */
+  --text-main: #f1f5f9;
+  /* slate-100 */
+  --text-muted: #64748b;
+  /* slate-500 */
+  --status-success: #3b82f6;
+  /* Azul (como pidió el usuario) */
+  --status-danger: #ef4444;
+  /* Rojo */
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+}
+
+[data-theme='light'] {
+  --bg-main: #f8fafc;
+  /* slate-50 */
+  --bg-card: #ffffff;
+  --bg-input: #f1f5f9;
+  --border-color: #e2e8f0;
+  /* slate-200 */
+  --text-main: #0f172a;
+  /* slate-900 */
+  --text-muted: #64748b;
+  /* slate-500 */
+  --status-success: #2563eb;
+  --status-danger: #dc2626;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+}
+
+[data-theme='daltonic'] {
+  /* High Contrast / Deuteranopia-friendly */
+  --bg-main: #000000;
+  --bg-card: #111111;
+  --bg-input: #000000;
+  --border-color: #ffffff;
+  --text-main: #ffffff;
+  --text-muted: #cccccc;
+  /* Daltonismo Grado 2+: Usamos Azul y Naranja intenso */
+  --status-success: #0077ff;
+  /* Blue */
+  --status-danger: #ff8800;
+  /* Orange/Gold easily distinguishable from blue */
+  --accent: #ffff00;
+  --accent-hover: #ffffff;
+}
+
 body {
-  @apply bg-slate-950 text-slate-100 font-sans;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  @apply font-sans transition-colors duration-300;
+}
+
+.bg-main {
+  background-color: var(--bg-main);
+}
+
+.bg-card {
+  background-color: var(--bg-card);
+}
+
+.bg-input {
+  background-color: var(--bg-input);
+}
+
+.border-theme {
+  border-color: var(--border-color);
+}
+
+.text-main {
+  color: var(--text-main);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-success-theme {
+  color: var(--status-success);
+}
+
+.text-danger-theme {
+  color: var(--status-danger);
+}
+
+.bg-success-theme {
+  background-color: var(--status-success);
+}
+
+.bg-danger-theme {
+  background-color: var(--status-danger);
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.shake {
+  animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+.text-metric {
+  font-size: 2.5rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.metric-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.modal-backdrop {
+  background-color: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(12px);
+}
+
+/* Custom button color */
+.btn-premium {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  @apply text-white shadow-lg shadow-emerald-900/20 hover:shadow-emerald-900/40;
 }

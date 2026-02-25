@@ -8,8 +8,10 @@
         "dev": "nodemon server.js"
     },
     "dependencies": {
+        "bcryptjs": "^3.0.3",
         "cors": "^2.8.5",
         "express": "^4.19.2",
+        "jsonwebtoken": "^9.0.3",
         "ping": "^0.4.4",
         "socket.io": "^4.7.5"
     },
