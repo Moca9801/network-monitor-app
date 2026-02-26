@@ -20,6 +20,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     targets: any[] = [];
     logs: any[] = [];
     currentTheme: 'dark' | 'light' | 'daltonic' = 'dark';
+    chartPoints: number = 20;
 
     // Categorías y Tipos
     sedes = ['CDJ', 'CJJ', 'CL', 'PUENTE GRANDE', 'Otros'];

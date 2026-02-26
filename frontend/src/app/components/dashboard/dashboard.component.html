@@ -8,7 +8,7 @@
           class="text-3xl md:text-5xl font-black bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent italic tracking-tighter">
           NETWORK MONITOR
         </h1>
-        <p class="text-muted font-bold tracking-[0.2em] text-[9px] uppercase opacity-70">Monitoreo Estratégico de Redes
+        <p class="text-muted font-bold tracking-[0.2em] text-[11px] uppercase opacity-70">Monitoreo Estratégico de Redes
         </p>
       </div>
 
@@ -104,7 +104,7 @@
                       <p
                         class="text-[10px] font-mono text-muted uppercase tracking-widest opacity-60 bg-main/50 px-2 py-0.5 rounded-lg border border-theme">
                         {{ target.ip }}</p>
-                      <span class="text-[10px] font-black"
+                      <span class="text-[12px] font-black"
                         [ngClass]="target.alive ? 'text-success-theme' : 'text-danger-theme'">
                         {{ target.alive ? 'EN LÍNEA' : 'FUERA DE LÍNEA' }}
                       </span>
@@ -112,84 +112,58 @@
                   </div>
                 </div>
 
-                <!-- Grid de 9 Métricas -->
-                <div class="flex-grow grid grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-4 w-full">
-                  <div class="stats-mini-box">
-                    <p class="metric-label-mini">SQ</p>
-                    <p class="text-metric-mini">{{ target.stats?.sq }}</p>
-                  </div>
+                <!-- Grid de Métricas Simplificado (Solo lo más importante) -->
+                <div class="flex-grow grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                   <div class="stats-mini-box">
                     <p class="metric-label-mini">RTT</p>
-                    <p class="text-metric-mini" [ngClass]="{'text-warning-theme': target.latency > 100}">{{
-                      target.latency }}<span class="unit">ms</span></p>
+                    <p class="text-metric-mini" [ngClass]="{'text-warning-theme': target.latency > 100}">
+                      {{ target.latency }}<span class="unit">ms</span>
+                    </p>
                   </div>
                   <div class="stats-mini-box">
-                    <p class="metric-label-mini">RP</p>
-                    <p class="text-metric-mini text-success-theme">{{ target.stats?.rp }}</p>
-                  </div>
-                  <div class="stats-mini-box">
-                    <p class="metric-label-mini">LP</p>
-                    <p class="text-metric-mini" [ngClass]="target.stats?.lp > 0 ? 'text-danger-theme' : 'text-muted'">{{
-                      target.stats?.lp }}</p>
-                  </div>
-                  <div class="stats-mini-box">
-                    <p class="metric-label-mini">PPL</p>
+                    <p class="metric-label-mini">PÉRDIDA (PPL)</p>
                     <p class="text-metric-mini"
-                      [ngClass]="target.stats?.ppl > 0 ? 'text-danger-theme' : 'text-success-theme'">{{
-                      target.stats?.ppl }}<span class="unit">%</span></p>
-                  </div>
-                  <div class="stats-mini-box">
-                    <p class="metric-label-mini">MIN</p>
-                    <p class="text-metric-mini">{{ target.stats?.min }}<span class="unit">ms</span></p>
-                  </div>
-                  <div class="stats-mini-box">
-                    <p class="metric-label-mini">MAX</p>
-                    <p class="text-metric-mini">{{ target.stats?.max }}<span class="unit">ms</span></p>
-                  </div>
-                  <div class="stats-mini-box border-accent/20 bg-accent/5">
-                    <p class="metric-label-mini text-accent">AVG</p>
-                    <p class="text-metric-mini text-main font-bold">{{ target.stats?.avg }}<span class="unit">ms</span>
+                      [ngClass]="target.stats?.ppl > 0 ? 'text-danger-theme' : 'text-success-theme'">
+                      {{ target.stats?.ppl }}<span class="unit">%</span>
                     </p>
                   </div>
                   <div class="stats-mini-box flex items-center justify-center">
                     <div class="flex items-center gap-2">
                       <span class="w-2 h-2 rounded-full"
                         [ngClass]="target.alive ? 'bg-success-theme' : 'bg-danger-theme'"></span>
-                      <span class="text-[9px] font-black uppercase opacity-60">{{ target.alive ? 'OK' : 'FAIL' }}</span>
+                      <span class="text-[11px] font-black uppercase opacity-60">{{ target.alive ? 'ONLINE' : 'OFFLINE'
+                        }}</span>
                     </div>
                   </div>
                 </div>
-
-                <!-- Acciones -->
-                <div
-                  class="flex items-center gap-3 w-full xl:w-auto justify-end border-t xl:border-t-0 border-theme pt-4 xl:pt-0 mt-4 xl:mt-0">
-                  <button (click)="openEdit(target); $event.stopPropagation()"
-                    class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm group/btn"
-                    title="Editar">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5 transition-transform group-hover/btn:scale-110" fill="none" viewBox="0 0 24 24"
-                      stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button (click)="removeServer(target.id); $event.stopPropagation()"
-                    class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-danger-theme hover:border-danger-theme transition-all shadow-sm group/btn"
-                    title="Eliminar">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5 transition-transform group-hover/btn:scale-110" fill="none" viewBox="0 0 24 24"
-                      stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
               </div>
 
-              <!-- Drag overlap -->
-              <div *cdkDragPlaceholder
-                class="bg-theme/5 h-full border-4 border-dashed border-theme/20 rounded-[2.5rem]">
+              <!-- Acciones -->
+              <div
+                class="flex items-center gap-3 w-full xl:w-auto justify-end border-t xl:border-t-0 border-theme pt-4 xl:pt-0 mt-4 xl:mt-0">
+                <button (click)="openEdit(target); $event.stopPropagation()"
+                  class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm group/btn"
+                  title="Editar">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover/btn:scale-110"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button (click)="removeServer(target.id); $event.stopPropagation()"
+                  class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-danger-theme hover:border-danger-theme transition-all shadow-sm group/btn"
+                  title="Eliminar">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover/btn:scale-110"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
+            </div>
+
+            <!-- Drag overlap -->
+            <div *cdkDragPlaceholder class="bg-theme/5 h-full border-4 border-dashed border-theme/20 rounded-[2.5rem]">
             </div>
           </div>
         </div>
@@ -287,31 +261,61 @@
         </button>
       </div>
 
-      <!-- Gráfica Expandida -->
-      <div class="bg-main/50 rounded-3xl border border-theme p-6 h-[400px]">
-        <app-latency-chart [ip]="selectedTarget?.ip"></app-latency-chart>
+      <!-- Gráfica Expandida con Control de Rango -->
+      <div class="bg-main/50 rounded-3xl border border-theme p-6">
+        <div class="flex justify-between items-center mb-4">
+          <p class="metric-label">Historial de Latencia</p>
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] font-black text-muted uppercase">Puntos:</span>
+            <select [(ngModel)]="chartPoints"
+              class="bg-card border border-theme rounded-lg px-2 py-1 text-[10px] font-bold outline-none">
+              <option [ngValue]="10">10 (Zoom Max)</option>
+              <option [ngValue]="20">20 (Normal)</option>
+              <option [ngValue]="50">50 (Amplio)</option>
+              <option [ngValue]="100">100 (Todo)</option>
+            </select>
+          </div>
+        </div>
+        <div class="h-[300px]">
+          <app-latency-chart [ip]="selectedTarget?.ip" [maxPoints]="chartPoints"></app-latency-chart>
+        </div>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
         <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Mínimo</p>
-          <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.min }}ms</p>
+          <p class="metric-label">Enviados (SQ)</p>
+          <p class="text-2xl font-black text-blue-500 mt-1">{{ selectedTarget?.stats?.sq }}</p>
         </div>
         <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Promedio</p>
-          <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.avg }}ms</p>
+          <p class="metric-label">Recibidos (RP)</p>
+          <p class="text-2xl font-black text-success-theme mt-1">{{ selectedTarget?.stats?.rp }}</p>
         </div>
         <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Máximo</p>
-          <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.max }}ms</p>
+          <p class="metric-label">Perdidos (LP)</p>
+          <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.lp }}</p>
         </div>
         <div class="bg-main/50 p-6 rounded-2xl border border-theme">
           <p class="metric-label">Pérdida (PPL)</p>
           <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.ppl }}%</p>
         </div>
         <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Enviados (SQ)</p>
-          <p class="text-2xl font-black text-blue-500 mt-1">{{ selectedTarget?.stats?.sq }}</p>
+          <p class="metric-label">Mínimo</p>
+          <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.min }}ms</p>
+        </div>
+        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+          <p class="metric-label">Máximo</p>
+          <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.max }}ms</p>
+        </div>
+        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+          <p class="metric-label">Promedio</p>
+          <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.avg }}ms</p>
+        </div>
+        <div class="bg-main/50 p-6 rounded-2xl border border-theme border-accent/20 bg-accent/5">
+          <p class="metric-label text-accent">Status</p>
+          <p class="text-2xl font-black mt-1"
+            [ngClass]="selectedTarget?.alive ? 'text-success-theme' : 'text-danger-theme'">
+            {{ selectedTarget?.alive ? 'ONLINE' : 'OFFLINE' }}
+          </p>
         </div>
       </div>
     </div>

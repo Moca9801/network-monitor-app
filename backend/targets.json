@@ -55,10 +55,22 @@
     "ip": "201.116.233.1",
     "description": "",
     "category": "CJJ",
-    "type": "Servidor",
+    "type": "Enlace",
     "id": "1772051914682",
     "userId": "1772048027640",
     "audioAlert": true,
-    "order": 2
+    "order": 2,
+    "alive": true,
+    "latency": 9,
+    "stats": {
+      "sq": 296,
+      "rp": 296,
+      "lp": 0,
+      "ppl": "0.0",
+      "min": "4.0",
+      "max": "14.0",
+      "avg": "6.5"
+    },
+    "timestamp": "2026-02-26T02:58:14.298Z"
   }
 ]
