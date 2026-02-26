@@ -7,6 +7,11 @@ const TARGETS_FILE = path.join(__dirname, 'targets.json');
 
 // Memory state for stats
 const statsState = {};
+let activeUserIds = new Set();
+
+function setActiveUsers(users) {
+    activeUserIds = users;
+}
 
 function getTargets(userId = null) {
     try {
@@ -77,10 +82,19 @@ const previousStatus = {};
 
 function startMonitoring(io) {
     const runPings = async () => {
-        const targets = getTargets();
-        if (targets.length === 0) return;
+        let targets = getTargets();
 
-        console.log(`Ejecutando pings para ${targets.length} servidores...`);
+        // Filter targets: only ping if userId is in activeUserIds
+        // If it's a legacy target without userId (unlikely now), we might keep it or skip it.
+        // Assuming all targets should have userId now.
+        targets = targets.filter(t => activeUserIds.has(t.userId));
+
+        if (targets.length === 0) {
+            // console.log('No hay usuarios activos, pings en pausa...');
+            return;
+        }
+
+        console.log(`Ejecutando pings para ${targets.length} servidores de usuarios activos...`);
 
         await Promise.all(targets.map(async (target) => {
             const result = await pingIP(target.ip);
@@ -157,4 +171,4 @@ function startMonitoring(io) {
     monitorInterval = setInterval(runPings, 1000); // 1 second for real-time stats
 }
 
-module.exports = { startMonitoring, getTargets, saveTargets, saveUserTargets };
+module.exports = { startMonitoring, getTargets, saveTargets, saveUserTargets, setActiveUsers };

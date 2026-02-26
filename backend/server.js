@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const { startMonitoring, getTargets, saveUserTargets } = require('./monitor');
+const { startMonitoring, getTargets, saveUserTargets, setActiveUsers } = require('./monitor');
 const { register, login, verifyToken } = require('./auth');
 
 const app = express();
@@ -38,6 +38,8 @@ const io = new Server(server, {
   }
 });
 
+const activeUsers = new Set();
+
 // Socket.io Middleware for Auth
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
@@ -55,6 +57,9 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
   const userId = socket.user.id;
   console.log(`Cliente conectado: ${socket.id} (User: ${userId})`);
+
+  activeUsers.add(userId);
+  setActiveUsers(activeUsers);
 
   // Unir al usuario a su propio room para recibir sus pings
   socket.join(userId);
@@ -140,6 +145,12 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Cliente desconectado:', socket.id);
+    // Check if user has other sockets
+    const userSockets = Array.from(io.sockets.sockets.values()).filter(s => s.user?.id === userId);
+    if (userSockets.length === 0) {
+      activeUsers.delete(userId);
+      setActiveUsers(activeUsers);
+    }
   });
 });
 

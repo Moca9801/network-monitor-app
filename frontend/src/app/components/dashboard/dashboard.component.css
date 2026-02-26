@@ -6,12 +6,14 @@
     align-items: center;
     justify-content: center;
     padding: 0.5rem;
-    /* md: 0.75rem */
+    min-width: 60px;
+    /* Ensure boxes have a minimum width */
+    overflow: hidden;
+    /* Prevent content from overflowing the box */
     background-color: var(--bg-main, rgba(0, 0, 0, 0.4));
-    /* Fallback to semi-transparent */
     border: 1px solid var(--border-theme, rgba(255, 255, 255, 0.1));
     border-radius: 1rem;
-    transition: all 0.3s duration-300;
+    transition: all 0.3s ease;
 }
 
 @media (min-width: 768px) {
@@ -28,36 +30,38 @@
 }
 
 .metric-label-mini {
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 900;
     color: var(--text-muted, #94a3b8);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
     line-height: 1;
     margin-bottom: 0.25rem;
+    white-space: nowrap;
 }
 
 .text-metric-mini {
-    font-size: 0.875rem;
-    /* md: 1rem */
+    font-size: 1rem;
     font-weight: 900;
     color: var(--text-main, #ffffff);
     line-height: 1;
     display: flex;
     align-items: baseline;
     gap: 0.125rem;
+    word-break: break-all;
+    /* Allow breaking long numbers if necessary */
 }
 
 @media (min-width: 768px) {
     .text-metric-mini {
-        font-size: 1rem;
+        font-size: 1.125rem;
     }
 }
 
 .unit {
-    font-size: 9px;
-    opacity: 0.4;
-    font-weight: 500;
+    font-size: 10px;
+    opacity: 0.6;
+    font-weight: 700;
 }
 
 .shake {

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxEchartsDirective, provideEcharts } from 'ngx-echarts';
 import { StorageService } from '../../services/storage.service';
@@ -16,8 +16,9 @@ import { EChartsOption } from 'echarts';
   `,
     styles: [``]
 })
-export class LatencyChartComponent implements OnInit, OnDestroy {
+export class LatencyChartComponent implements OnInit, OnDestroy, OnChanges {
     @Input() ip!: string;
+    @Input() maxPoints: number = 20;
     chartOption: EChartsOption = {};
     private sub: Subscription = new Subscription();
 
@@ -36,8 +37,20 @@ export class LatencyChartComponent implements OnInit, OnDestroy {
         });
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['maxPoints'] || changes['ip']) {
+            this.updateChart();
+        }
+    }
+
     private updateChart() {
-        const history = this.storageService.getHistory()[this.ip] || [];
+        let history = this.storageService.getHistory()[this.ip] || [];
+
+        // Use the provided maxPoints for "zoom" level
+        if (history.length > this.maxPoints) {
+            history = history.slice(-this.maxPoints);
+        }
+
         const data = history.map(h => h.latency);
         const times = history.map(h => new Date(h.timestamp).toLocaleTimeString());
 
