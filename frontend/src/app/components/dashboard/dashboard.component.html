@@ -59,80 +59,137 @@
   </header>
 
   <!-- Lista de Equipos (Filas) -->
-  <main class="space-y-12">
-    <div *ngFor="let sede of sedes" class="space-y-6">
+  <main class="space-y-16">
+    <div *ngFor="let sede of sedes" class="space-y-8">
       <div *ngIf="getTargetsByCategory(sede).length > 0">
-        <h2 class="text-xs font-black text-muted uppercase tracking-[0.4em] mb-4 flex items-center gap-4">
+        <h2 class="text-xl md:text-2xl font-black text-main uppercase tracking-[0.3em] mb-6 flex items-center gap-6">
+          <span class="p-3 bg-blue-500/10 rounded-2xl text-blue-500 border border-blue-500/20">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </span>
           {{ sede }}
           <span class="h-px flex-grow bg-theme opacity-10"></span>
         </h2>
 
-        <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="space-y-4">
-          <div *ngFor="let target of getTargetsByCategory(sede)" cdkDrag (click)="openDetails(target)"
-            class="bg-card rounded-[2rem] border border-theme shadow-lg hover:border-accent hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group">
+        <!-- Nested Loop for Types -->
+        <div *ngFor="let type of getTypesInCategory(sede)"
+          class="space-y-6 mb-12 last:mb-0 ml-4 md:ml-8 border-l-2 border-theme/10 pl-6 md:pl-10">
+          <h3 class="text-xs font-black text-muted uppercase tracking-[0.4em] flex items-center gap-4">
+            {{ type }}
+            <span class="h-px w-8 bg-theme opacity-10"></span>
+          </h3>
 
-            <div class="p-6 md:p-8 flex flex-col md:flex-row items-center gap-8">
-              <!-- Status y Nombre -->
-              <div class="flex items-center gap-6 min-w-[280px]">
+          <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="space-y-4">
+            <div *ngFor="let target of getTargetsByCategoryAndType(sede, type)" cdkDrag (click)="openDetails(target)"
+              class="bg-card rounded-[2.5rem] border border-theme shadow-lg hover:border-accent hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden">
+
+              <div class="relative p-6 md:p-8 flex flex-col xl:flex-row items-center gap-8">
+                <!-- Status y Nombre -->
+                <div class="flex items-center gap-6 min-w-[300px] w-full xl:w-auto">
+                  <div class="relative">
+                    <div
+                      [ngClass]="target.alive ? 'bg-success-theme shadow-[0_0_25px_var(--status-success)]' : 'bg-danger-theme shadow-[0_0_25px_var(--status-danger)] shake'"
+                      class="w-5 h-5 rounded-full flex-shrink-0 z-10 relative"></div>
+                    <div *ngIf="target.alive"
+                      class="absolute inset-0 bg-success-theme rounded-full animate-ping opacity-40"></div>
+                  </div>
+                  <div>
+                    <h3 class="text-2xl font-black text-main leading-none tracking-tight mb-1">{{ target.name }}</h3>
+                    <div class="flex items-center gap-3">
+                      <p
+                        class="text-[10px] font-mono text-muted uppercase tracking-widest opacity-60 bg-main/50 px-2 py-0.5 rounded-lg border border-theme">
+                        {{ target.ip }}</p>
+                      <span class="text-[10px] font-black"
+                        [ngClass]="target.alive ? 'text-success-theme' : 'text-danger-theme'">
+                        {{ target.alive ? 'EN LÍNEA' : 'FUERA DE LÍNEA' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Grid de 9 Métricas -->
+                <div class="flex-grow grid grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-4 w-full">
+                  <div class="stats-mini-box">
+                    <p class="metric-label-mini">SQ</p>
+                    <p class="text-metric-mini">{{ target.stats?.sq }}</p>
+                  </div>
+                  <div class="stats-mini-box">
+                    <p class="metric-label-mini">RTT</p>
+                    <p class="text-metric-mini" [ngClass]="{'text-warning-theme': target.latency > 100}">{{
+                      target.latency }}<span class="unit">ms</span></p>
+                  </div>
+                  <div class="stats-mini-box">
+                    <p class="metric-label-mini">RP</p>
+                    <p class="text-metric-mini text-success-theme">{{ target.stats?.rp }}</p>
+                  </div>
+                  <div class="stats-mini-box">
+                    <p class="metric-label-mini">LP</p>
+                    <p class="text-metric-mini" [ngClass]="target.stats?.lp > 0 ? 'text-danger-theme' : 'text-muted'">{{
+                      target.stats?.lp }}</p>
+                  </div>
+                  <div class="stats-mini-box">
+                    <p class="metric-label-mini">PPL</p>
+                    <p class="text-metric-mini"
+                      [ngClass]="target.stats?.ppl > 0 ? 'text-danger-theme' : 'text-success-theme'">{{
+                      target.stats?.ppl }}<span class="unit">%</span></p>
+                  </div>
+                  <div class="stats-mini-box">
+                    <p class="metric-label-mini">MIN</p>
+                    <p class="text-metric-mini">{{ target.stats?.min }}<span class="unit">ms</span></p>
+                  </div>
+                  <div class="stats-mini-box">
+                    <p class="metric-label-mini">MAX</p>
+                    <p class="text-metric-mini">{{ target.stats?.max }}<span class="unit">ms</span></p>
+                  </div>
+                  <div class="stats-mini-box border-accent/20 bg-accent/5">
+                    <p class="metric-label-mini text-accent">AVG</p>
+                    <p class="text-metric-mini text-main font-bold">{{ target.stats?.avg }}<span class="unit">ms</span>
+                    </p>
+                  </div>
+                  <div class="stats-mini-box flex items-center justify-center">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full"
+                        [ngClass]="target.alive ? 'bg-success-theme' : 'bg-danger-theme'"></span>
+                      <span class="text-[9px] font-black uppercase opacity-60">{{ target.alive ? 'OK' : 'FAIL' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Acciones -->
                 <div
-                  [ngClass]="target.alive ? 'bg-success-theme shadow-[0_0_20px_var(--status-success)] animate-pulse' : 'bg-danger-theme shadow-[0_0_20px_var(--status-danger)] shake'"
-                  class="w-4 h-4 rounded-full flex-shrink-0"></div>
-                <div>
-                  <h3 class="text-2xl font-black text-main leading-tight tracking-tight">{{ target.name }}</h3>
-                  <p class="text-[11px] font-mono text-muted mt-1 uppercase tracking-widest opacity-60">{{ target.ip }}
-                  </p>
+                  class="flex items-center gap-3 w-full xl:w-auto justify-end border-t xl:border-t-0 border-theme pt-4 xl:pt-0 mt-4 xl:mt-0">
+                  <button (click)="openEdit(target); $event.stopPropagation()"
+                    class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm group/btn"
+                    title="Editar">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5 transition-transform group-hover/btn:scale-110" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button (click)="removeServer(target.id); $event.stopPropagation()"
+                    class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-danger-theme hover:border-danger-theme transition-all shadow-sm group/btn"
+                    title="Eliminar">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5 transition-transform group-hover/btn:scale-110" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               </div>
 
-              <!-- Métricas Grandes -->
-              <div class="flex-grow grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div class="text-center md:text-left">
-                  <p class="metric-label">Latencia</p>
-                  <p class="text-metric text-main">{{ target.latency }}<span
-                      class="text-sm ml-1 opacity-50 font-medium">ms</span></p>
-                </div>
-                <div class="text-center md:text-left">
-                  <p class="metric-label">Inestabilidad</p>
-                  <p class="text-metric" [ngClass]="target.stats?.ppl > 0 ? 'text-danger-theme' : 'text-success-theme'">
-                    {{ target.stats?.ppl }}<span class="text-sm ml-1 opacity-50 font-medium">%</span>
-                  </p>
-                </div>
-                <div class="hidden md:block">
-                  <p class="metric-label">Enviados</p>
-                  <p class="text-3xl font-black text-main mt-1">{{ target.stats?.sq }}</p>
-                </div>
-                <div class="hidden md:block">
-                  <p class="metric-label">Promedio</p>
-                  <p class="text-3xl font-black text-main mt-1">{{ target.stats?.avg }}<span
-                      class="text-xs ml-0.5 opacity-50 font-medium">ms</span></p>
-                </div>
+              <!-- Drag overlap -->
+              <div *cdkDragPlaceholder
+                class="bg-theme/5 h-full border-4 border-dashed border-theme/20 rounded-[2.5rem]">
               </div>
-
-              <!-- Acciones -->
-              <div class="flex items-center gap-3">
-                <button (click)="openEdit(target); $event.stopPropagation()"
-                  class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm"
-                  title="Editar">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button (click)="removeServer(target.id); $event.stopPropagation()"
-                  class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-danger-theme hover:border-danger-theme transition-all shadow-sm"
-                  title="Eliminar">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Drag overlap -->
-            <div *cdkDragPlaceholder class="bg-theme/5 h-full border-4 border-dashed border-theme/20 rounded-[2rem]">
             </div>
           </div>
         </div>
@@ -180,6 +237,14 @@
         </div>
 
         <div class="space-y-2">
+          <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Tipo de Servicio</label>
+          <select name="type" [(ngModel)]="newServer.type"
+            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-emerald-500 outline-none appearance-none cursor-pointer">
+            <option *ngFor="let t of tipos" [value]="t">{{t}}</option>
+          </select>
+        </div>
+
+        <div class="space-y-2">
           <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Dirección IP</label>
           <input name="ip" [(ngModel)]="newServer.ip" type="text" placeholder="0.0.0.0"
             class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xl font-black focus:border-emerald-500 outline-none transition-all font-mono shadow-inner text-center">
@@ -202,12 +267,20 @@
     <div class="p-8 md:p-12 space-y-8">
       <div class="flex justify-between items-start">
         <div>
-          <h2 class="text-3xl font-black text-main">{{ selectedTarget?.name }}</h2>
-          <p class="text-sm font-mono text-muted mt-2 tracking-widest uppercase">{{ selectedTarget?.ip }} — {{
-            selectedTarget?.category }}</p>
+          <h2 class="text-3xl font-black text-main leading-none">{{ selectedTarget?.name }}</h2>
+          <div class="flex items-center gap-2 mt-3">
+            <span
+              class="px-3 py-1 bg-main border border-theme rounded-lg text-[10px] font-black text-muted uppercase tracking-widest">{{
+              selectedTarget?.category }}</span>
+            <span
+              class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[10px] font-black text-blue-500 uppercase tracking-widest">{{
+              selectedTarget?.type || 'Otros' }}</span>
+            <span class="px-3 py-1 bg-main border border-theme rounded-lg text-[10px] font-mono text-muted">{{
+              selectedTarget?.ip }}</span>
+          </div>
         </div>
         <button (click)="closeDetails()"
-          class="p-4 bg-main rounded-2xl border border-theme text-muted hover:text-main transition-all">
+          class="p-4 bg-shadow rounded-2xl border border-theme text-muted hover:text-main transition-all">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -219,7 +292,7 @@
         <app-latency-chart [ip]="selectedTarget?.ip"></app-latency-chart>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
         <div class="bg-main/50 p-6 rounded-2xl border border-theme">
           <p class="metric-label">Mínimo</p>
           <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.min }}ms</p>
@@ -233,8 +306,12 @@
           <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.max }}ms</p>
         </div>
         <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Paquetes Perdidos</p>
-          <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.lp }}</p>
+          <p class="metric-label">Pérdida (PPL)</p>
+          <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.ppl }}%</p>
+        </div>
+        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+          <p class="metric-label">Enviados (SQ)</p>
+          <p class="text-2xl font-black text-blue-500 mt-1">{{ selectedTarget?.stats?.sq }}</p>
         </div>
       </div>
     </div>
@@ -271,9 +348,17 @@
 
         <div class="space-y-2">
           <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Sede</label>
-          <select [(ngModel)]="editingTarget.category"
+          <select name="editCategory" [(ngModel)]="editingTarget.category"
             class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-blue-500 outline-none">
             <option *ngFor="let s of sedes" [value]="s">{{s}}</option>
+          </select>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Tipo de Servicio</label>
+          <select name="editType" [(ngModel)]="editingTarget.type"
+            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-blue-500 outline-none">
+            <option *ngFor="let t of tipos" [value]="t">{{t}}</option>
           </select>
         </div>
 
