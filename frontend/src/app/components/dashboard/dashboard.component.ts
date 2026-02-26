@@ -23,7 +23,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Categorías y Tipos
     sedes = ['CDJ', 'CJJ', 'CL', 'PUENTE GRANDE', 'Otros'];
-    tipos = ['Servidor', 'Switch', 'Access Point', 'Otros'];
+    tipos = ['Servidor', 'Switch', 'Access Point', 'Radio', 'Enlace', 'Otros'];
 
     // Form model
     newServer = {
@@ -200,6 +200,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     getTargetsByCategory(category: string) {
         return this.targets.filter(t => t.category === category);
+    }
+
+    getTargetsByCategoryAndType(category: string, type: string) {
+        return this.targets.filter(t => t.category === category && (t.type || 'Otros') === type);
+    }
+
+    getTypesInCategory(category: string) {
+        const targets = this.getTargetsByCategory(category);
+        const types = [...new Set(targets.map(t => t.type || 'Otros'))];
+        return this.tipos.filter(t => types.includes(t));
     }
 
     logout() {
