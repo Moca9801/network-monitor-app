@@ -40,6 +40,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     isEditModalOpen = false;
     isDetailsModalOpen = false;
     isSettingsModalOpen = false;
+    showHeaderMenu = false;
     configTab: 'personal' | 'group' = 'personal';
     testStatus: 'idle' | 'testing' | 'success' | 'error' = 'idle';
     testErrorMessage = '';

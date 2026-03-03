@@ -43,26 +43,76 @@
       </div>
     </div>
 
-    <div class="flex items-center gap-4">
+    <!-- Botones Desktop (lg+) -->
+    <div class="hidden lg:flex items-center gap-4">
       <button (click)="openSettings()"
-        class="px-8 py-3 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white rounded-2xl border border-indigo-500/20 transition-all text-xs font-black uppercase tracking-widest flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        class="px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white rounded-2xl border border-indigo-500/20 transition-all text-xs font-black uppercase tracking-widest flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
-        CONFIGURACIÓN DE ALERTAS
+        Configuración de Alertas
       </button>
       <button (click)="openAdd()"
-        class="btn-premium px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 transition-transform hover:scale-105 active:scale-95 shadow-xl">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        class="btn-premium px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-xl">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
         </svg>
-        NUEVA MONITORIZACIÓN
+        Nueva Monitorización
       </button>
       <button (click)="logout()"
-        class="px-8 py-3 bg-danger-theme/10 hover:bg-danger-theme text-danger-theme hover:text-white rounded-2xl border border-danger-theme/20 transition-all text-xs font-black uppercase tracking-widest">
+        class="px-6 py-3 bg-danger-theme/10 hover:bg-danger-theme text-danger-theme hover:text-white rounded-2xl border border-danger-theme/20 transition-all text-xs font-black uppercase tracking-widest">
         Cerrar Sesión
       </button>
+    </div>
+
+    <!-- Menú Mobile (< lg): botón "⋯" + dropdown -->
+    <div class="lg:hidden relative">
+      <button (click)="showHeaderMenu = !showHeaderMenu"
+        class="p-3.5 bg-card border border-theme rounded-2xl text-muted hover:text-main hover:border-accent transition-all shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <circle cx="5" cy="12" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="19" cy="12" r="2" />
+        </svg>
+      </button>
+
+      <!-- Backdrop para cerrar el menu -->
+      <div *ngIf="showHeaderMenu" class="fixed inset-0 z-40" (click)="showHeaderMenu = false"></div>
+
+      <!-- Dropdown Panel -->
+      <div *ngIf="showHeaderMenu"
+        class="absolute right-0 top-14 z-50 w-64 bg-card border border-theme rounded-[2rem] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div class="p-3 space-y-1">
+          <button (click)="openSettings(); showHeaderMenu = false"
+            class="w-full flex items-center gap-4 px-5 py-4 rounded-[1.5rem] text-indigo-400 hover:bg-indigo-500/10 transition-all text-xs font-black uppercase tracking-widest">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            Configuración de Alertas
+          </button>
+          <button (click)="openAdd(); showHeaderMenu = false"
+            class="w-full flex items-center gap-4 px-5 py-4 rounded-[1.5rem] text-success-theme hover:bg-success-theme/10 transition-all text-xs font-black uppercase tracking-widest">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+            </svg>
+            Nueva Monitorización
+          </button>
+          <div class="mx-4 my-1 h-px bg-theme opacity-30"></div>
+          <button (click)="logout(); showHeaderMenu = false"
+            class="w-full flex items-center gap-4 px-5 py-4 rounded-[1.5rem] text-danger-theme hover:bg-danger-theme/10 transition-all text-xs font-black uppercase tracking-widest">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -96,9 +146,9 @@
             <div *ngFor="let target of getTargetsByCategoryAndType(sede, type)" cdkDrag (click)="openDetails(target)"
               class="bg-card rounded-[2.5rem] border border-theme shadow-lg hover:border-accent hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden">
 
-              <div class="relative p-6 md:p-8 flex flex-col xl:flex-row items-center gap-8">
+              <div class="relative p-6 md:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-8">
                 <!-- Status y Nombre -->
-                <div class="flex items-center gap-6 min-w-[300px] w-full xl:w-auto">
+                <div class="flex items-center gap-6 w-full lg:w-auto">
                   <div class="relative">
                     <div
                       [ngClass]="target.alive ? 'bg-success-theme shadow-[0_0_25px_var(--status-success)]' : 'bg-danger-theme shadow-[0_0_25px_var(--status-danger)] shake'"
@@ -121,7 +171,7 @@
                 </div>
 
                 <!-- Grid de Métricas Simplificado (Solo lo más importante) -->
-                <div class="flex-grow grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div class="stats-mini-box">
                     <p class="metric-label-mini">RTT</p>
                     <p class="text-metric-mini" [ngClass]="{'text-warning-theme': target.latency > 100}">
@@ -148,7 +198,7 @@
 
               <!-- Acciones -->
               <div
-                class="flex items-center gap-3 w-full xl:w-auto justify-end border-t xl:border-t-0 border-theme pt-4 xl:pt-0 mt-4 xl:mt-0">
+                class="flex items-center gap-3 w-full lg:w-auto justify-end border-t lg:border-t-0 border-theme pt-4 lg:pt-0 mt-2 lg:mt-0">
                 <button (click)="openEdit(target); $event.stopPropagation()"
                   class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm group/btn"
                   title="Editar">
@@ -361,7 +411,7 @@
         </button>
       </div>
 
-      <div class="flex flex-col md:flex-row h-[500px]">
+      <div class="flex flex-col md:flex-row" style="max-height: 70vh; min-height: 400px;">
         <!-- Sidebar Tabs -->
         <div class="w-full md:w-64 bg-main/10 border-r border-theme p-6 space-y-2">
           <p class="text-[9px] font-black text-muted uppercase tracking-[0.2em] mb-4 opacity-40">Tipo de Alerta</p>
@@ -408,10 +458,9 @@
               <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
                 <span
                   class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">2</span>
-                <p class="text-[11px] font-bold text-muted leading-relaxed">Inicia el bot y mándale un saludo. Luego
-                  ejecuta el script <code
-                    class="bg-main px-1.5 py-0.5 rounded text-main">node backend/get-chat-id.js</code> en tu terminal de
-                  servidor.</p>
+                <p class="text-[11px] font-bold text-muted leading-relaxed">Inicia tu bot y luego busca <span
+                    class="text-main">&#64;userinfobot</span> en Telegram. Al escribirle cualquier mensaje, te
+                  responderá con tu <span class="text-indigo-400">Chat ID</span> directamente.</p>
               </div>
             </div>
 
@@ -425,9 +474,10 @@
               <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
                 <span
                   class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">2</span>
-                <p class="text-[11px] font-bold text-muted leading-relaxed">Escribe algo en el grupo y usa el script del
-                  servidor. El ID del grupo <span class="text-warning-theme italic">siempre empieza con un "-"</span>.
-                </p>
+                <p class="text-[11px] font-bold text-muted leading-relaxed">Escribe cualquier mensaje en el grupo y
+                  luego envía ese mensaje a <span class="text-main">&#64;userinfobot</span> como reenvío (forward). Te
+                  responderá con el <span class="text-indigo-400">ID del grupo</span>. <span
+                    class="text-warning-theme italic">Siempre empieza con "-"</span>.</p>
               </div>
             </div>
           </div>
