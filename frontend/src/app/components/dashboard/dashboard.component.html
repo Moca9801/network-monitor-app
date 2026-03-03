@@ -119,12 +119,13 @@
   </header>
 
   <!-- Lista de Equipos (Filas) -->
-  <main class="space-y-16">
+  <main class="space-y-12">
     <div *ngFor="let sede of sedes" class="space-y-8">
       <div *ngIf="getTargetsByCategory(sede).length > 0">
-        <h2 class="text-xl md:text-2xl font-black text-main uppercase tracking-[0.3em] mb-6 flex items-center gap-6">
-          <span class="p-3 bg-blue-500/10 rounded-2xl text-blue-500 border border-blue-500/20">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+        <h2 class="text-base md:text-lg font-black text-main uppercase tracking-[0.25em] mb-5 flex items-center gap-4">
+          <span
+            class="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/15 shadow-lg shadow-blue-500/5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                 d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -132,31 +133,34 @@
                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </span>
-          {{ sede }}
-          <span class="h-px flex-grow bg-theme opacity-10"></span>
+          <span class="bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent">{{ sede }}</span>
+          <span class="h-px flex-grow"
+            style="background: linear-gradient(to right, rgba(148,163,184,0.15), transparent)"></span>
         </h2>
 
         <!-- Nested Loop for Types -->
         <div *ngFor="let type of getTypesInCategory(sede)"
           class="space-y-4 mb-10 last:mb-0 ml-2 md:ml-8 border-l-2 border-theme/10 pl-3 md:pl-10">
-          <h3 class="text-xs font-black text-muted uppercase tracking-[0.4em] flex items-center gap-4">
+          <h3 class="text-[10px] font-black text-muted uppercase tracking-[0.3em] flex items-center gap-3 opacity-60">
             {{ type }}
-            <span class="h-px w-8 bg-theme opacity-10"></span>
+            <span class="h-px flex-grow"
+              style="background: linear-gradient(to right, rgba(148,163,184,0.1), transparent)"></span>
           </h3>
 
           <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="space-y-4">
             <div *ngFor="let target of getTargetsByCategoryAndType(sede, type)" cdkDrag (click)="openDetails(target)"
-              class="bg-card rounded-[2rem] border border-theme shadow-lg hover:border-accent hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden">
+              class="bg-card rounded-[2rem] border border-theme shadow-md hover:shadow-[0_0_40px_-8px_rgba(59,130,246,0.25)] hover:border-blue-500/20 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group overflow-hidden">
 
               <div class="relative p-4 md:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-8">
                 <!-- Status y Nombre + botones mobile (en la misma fila) -->
                 <div class="flex items-center gap-4 w-full">
                   <div class="relative flex-shrink-0">
-                    <div
-                      [ngClass]="target.alive ? 'bg-success-theme shadow-[0_0_25px_var(--status-success)]' : 'bg-danger-theme shadow-[0_0_25px_var(--status-danger)] shake'"
-                      class="w-5 h-5 rounded-full flex-shrink-0 z-10 relative"></div>
+                    <div [ngClass]="target.alive ? 'bg-success-theme' : 'bg-danger-theme shake'"
+                      class="w-4 h-4 rounded-full flex-shrink-0 z-10 relative"
+                      [style.box-shadow]="target.alive ? '0 0 16px var(--status-success)' : '0 0 16px var(--status-danger)'">
+                    </div>
                     <div *ngIf="target.alive"
-                      class="absolute inset-0 bg-success-theme rounded-full animate-ping opacity-40"></div>
+                      class="absolute inset-0 bg-success-theme rounded-full animate-ping opacity-30"></div>
                   </div>
                   <div class="flex-grow min-w-0">
                     <h3 class="text-lg md:text-2xl font-black text-main leading-none tracking-tight mb-1 truncate">{{
