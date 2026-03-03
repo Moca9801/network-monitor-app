@@ -1,72 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Premium Design Tokens ──────────────────────────── */
 :root {
-  /* Default Dark Theme (Existing style) */
   --bg-main: #020617;
   /* slate-950 */
-  --bg-card: #0f172a;
-  /* slate-900 */
+  --bg-card: #0a0f1e;
+  /* deeper, richer card bg */
   --bg-input: #020617;
   --border-color: #1e293b;
   /* slate-800 */
   --text-main: #f1f5f9;
   /* slate-100 */
-  --text-muted: #64748b;
-  /* slate-500 */
+  --text-muted: #475569;
+  /* slate-600 */
   --status-success: #3b82f6;
-  /* Azul (como pidió el usuario) */
   --status-danger: #ef4444;
-  /* Rojo */
   --accent: #3b82f6;
   --accent-hover: #60a5fa;
+  --glow-color: rgba(59, 130, 246, 0.15);
 }
 
 [data-theme='light'] {
-  --bg-main: #f8fafc;
-  /* slate-50 */
+  --bg-main: #f0f4ff;
   --bg-card: #ffffff;
   --bg-input: #f1f5f9;
-  --border-color: #e2e8f0;
-  /* slate-200 */
+  --border-color: #dde3f0;
   --text-main: #0f172a;
-  /* slate-900 */
   --text-muted: #64748b;
-  /* slate-500 */
   --status-success: #2563eb;
   --status-danger: #dc2626;
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
+  --glow-color: rgba(37, 99, 235, 0.08);
 }
 
 [data-theme='daltonic'] {
-  /* High Contrast / Deuteranopia-friendly */
   --bg-main: #000000;
-  --bg-card: #111111;
+  --bg-card: #0d0d0d;
   --bg-input: #000000;
-  --border-color: #ffffff;
+  --border-color: #2a2a2a;
   --text-main: #ffffff;
-  --text-muted: #cccccc;
-  /* Daltonismo Grado 2+: Usamos Azul y Naranja intenso */
+  --text-muted: #aaaaaa;
   --status-success: #0077ff;
-  /* Blue */
   --status-danger: #ff8800;
-  /* Orange/Gold easily distinguishable from blue */
   --accent: #ffff00;
   --accent-hover: #ffffff;
+  --glow-color: rgba(255, 255, 0, 0.08);
+}
+
+/* ─── Base Styles ─────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-main);
   background-image:
-    radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.1) 1px, transparent 0);
-  background-size: 24px 24px;
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59, 130, 246, 0.12), transparent),
+    radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.06) 1px, transparent 0);
+  background-size: 100% 100%, 28px 28px;
   background-attachment: fixed;
   color: var(--text-main);
-  @apply font-sans transition-colors duration-300;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
+/* ─── Utility Classes ─────────────────────────────────── */
 .bg-main {
   background-color: var(--bg-main);
 }
@@ -107,26 +118,34 @@ body {
   background-color: var(--status-danger);
 }
 
-@keyframes shake {
-
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  25% {
-    transform: translateX(-4px);
-  }
-
-  75% {
-    transform: translateX(4px);
-  }
+.border-accent {
+  border-color: var(--accent);
 }
 
-.shake {
-  animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+/* ─── Glass Card Effect ───────────────────────────────── */
+.glass {
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* ─── Premium Button ──────────────────────────────────── */
+.btn-premium {
+  background: linear-gradient(135deg, #10b981 0%, #059669 60%, #0d9488 100%);
+  @apply text-white shadow-lg;
+  box-shadow: 0 4px 24px -4px rgba(16, 185, 129, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-premium:hover {
+  box-shadow: 0 8px 32px -4px rgba(16, 185, 129, 0.55),
+    0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  filter: brightness(1.08);
+}
+
+/* ─── Metric Typography ───────────────────────────────── */
 .text-metric {
   font-size: 2.5rem;
   line-height: 1;
@@ -135,20 +154,67 @@ body {
 }
 
 .metric-label {
-  font-size: 0.65rem;
-  font-weight: 900;
-  letter-spacing: 0.2em;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
+  opacity: 0.7;
 }
 
+/* ─── Modal Backdrop ──────────────────────────────────── */
 .modal-backdrop {
-  background-color: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(12px);
+  background: radial-gradient(ellipse at center, rgba(2, 6, 23, 0.6) 0%, rgba(2, 6, 23, 0.92) 100%);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
 }
 
-/* Custom button color */
-.btn-premium {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  @apply text-white shadow-lg shadow-emerald-900/20 hover:shadow-emerald-900/40;
+/* ─── Shake Animation ─────────────────────────────────── */
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-3px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+.shake {
+  animation: shake 0.6s ease both infinite;
+}
+
+/* ─── Smooth Scrollbar ────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* ─── Focus Ring ──────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
