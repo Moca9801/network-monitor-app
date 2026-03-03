@@ -1,19 +1,21 @@
-<div class="min-h-screen bg-main text-main p-4 md:p-8 max-w-[1200px] mx-auto space-y-12 transition-colors duration-500">
+<div
+  class="min-h-screen bg-main text-main px-3 py-3 md:p-8 max-w-[1200px] mx-auto space-y-8 md:space-y-12 transition-colors duration-500">
   <!-- Header -->
   <header
-    class="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-card backdrop-blur-xl p-6 rounded-[3rem] border border-theme shadow-2xl gap-6">
-    <div class="flex items-center gap-8">
-      <div class="space-y-1">
+    class="relative z-20 flex flex-row items-center justify-between bg-card backdrop-blur-xl px-5 py-4 md:p-6 rounded-[2rem] md:rounded-[3rem] border border-theme shadow-2xl gap-4">
+    <div class="flex items-center gap-4 md:gap-8 min-w-0">
+      <div class="space-y-0.5 min-w-0">
         <h1
-          class="text-3xl md:text-5xl font-black bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent italic tracking-tighter">
+          class="text-xl sm:text-3xl md:text-5xl font-black bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent italic tracking-tighter leading-tight whitespace-nowrap">
           NETWORK MONITOR
         </h1>
-        <p class="text-muted font-bold tracking-[0.2em] text-[11px] uppercase opacity-70">Monitoreo Estratégico de Redes
+        <p class="hidden sm:block text-muted font-bold tracking-[0.2em] text-[10px] uppercase opacity-70">Monitoreo
+          Estratégico de Redes
         </p>
       </div>
 
       <!-- Theme Switcher -->
-      <div class="flex bg-main/50 p-1.5 rounded-2xl border border-theme gap-2 shadow-inner">
+      <div class="hidden sm:flex bg-main/50 p-1.5 rounded-2xl border border-theme gap-2 shadow-inner">
         <button (click)="setTheme('dark')"
           [ngClass]="{'bg-blue-600 text-white shadow-lg': currentTheme === 'dark', 'text-muted hover:text-main': currentTheme !== 'dark'}"
           class="p-2 rounded-xl transition-all" title="Tema Oscuro">
@@ -136,7 +138,7 @@
 
         <!-- Nested Loop for Types -->
         <div *ngFor="let type of getTypesInCategory(sede)"
-          class="space-y-6 mb-12 last:mb-0 ml-4 md:ml-8 border-l-2 border-theme/10 pl-6 md:pl-10">
+          class="space-y-4 mb-10 last:mb-0 ml-2 md:ml-8 border-l-2 border-theme/10 pl-3 md:pl-10">
           <h3 class="text-xs font-black text-muted uppercase tracking-[0.4em] flex items-center gap-4">
             {{ type }}
             <span class="h-px w-8 bg-theme opacity-10"></span>
@@ -144,34 +146,56 @@
 
           <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="space-y-4">
             <div *ngFor="let target of getTargetsByCategoryAndType(sede, type)" cdkDrag (click)="openDetails(target)"
-              class="bg-card rounded-[2.5rem] border border-theme shadow-lg hover:border-accent hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden">
+              class="bg-card rounded-[2rem] border border-theme shadow-lg hover:border-accent hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden">
 
-              <div class="relative p-6 md:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-8">
-                <!-- Status y Nombre -->
-                <div class="flex items-center gap-6 w-full lg:w-auto">
-                  <div class="relative">
+              <div class="relative p-4 md:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-8">
+                <!-- Status y Nombre + botones mobile (en la misma fila) -->
+                <div class="flex items-center gap-4 w-full">
+                  <div class="relative flex-shrink-0">
                     <div
                       [ngClass]="target.alive ? 'bg-success-theme shadow-[0_0_25px_var(--status-success)]' : 'bg-danger-theme shadow-[0_0_25px_var(--status-danger)] shake'"
                       class="w-5 h-5 rounded-full flex-shrink-0 z-10 relative"></div>
                     <div *ngIf="target.alive"
                       class="absolute inset-0 bg-success-theme rounded-full animate-ping opacity-40"></div>
                   </div>
-                  <div>
-                    <h3 class="text-2xl font-black text-main leading-none tracking-tight mb-1">{{ target.name }}</h3>
-                    <div class="flex items-center gap-3">
+                  <div class="flex-grow min-w-0">
+                    <h3 class="text-lg md:text-2xl font-black text-main leading-none tracking-tight mb-1 truncate">{{
+                      target.name }}</h3>
+                    <div class="flex items-center gap-2 flex-wrap">
                       <p
-                        class="text-[10px] font-mono text-muted uppercase tracking-widest opacity-60 bg-main/50 px-2 py-0.5 rounded-lg border border-theme">
+                        class="text-[9px] md:text-[10px] font-mono text-muted uppercase tracking-widest opacity-60 bg-main/50 px-2 py-0.5 rounded-lg border border-theme">
                         {{ target.ip }}</p>
-                      <span class="text-[12px] font-black"
+                      <span class="text-[11px] font-black"
                         [ngClass]="target.alive ? 'text-success-theme' : 'text-danger-theme'">
-                        {{ target.alive ? 'EN LÍNEA' : 'FUERA DE LÍNEA' }}
+                        {{ target.alive ? 'EN LÍNEA' : 'FUERA' }}
                       </span>
                     </div>
                   </div>
+                  <!-- Acciones inline en mobile -->
+                  <div class="flex lg:hidden items-center gap-2 flex-shrink-0">
+                    <button (click)="openEdit(target); $event.stopPropagation()"
+                      class="p-3 bg-main border border-theme rounded-xl text-muted hover:text-blue-500 hover:border-blue-500 transition-all"
+                      title="Editar">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button (click)="removeServer(target.id); $event.stopPropagation()"
+                      class="p-3 bg-main border border-theme rounded-xl text-muted hover:text-danger-theme hover:border-danger-theme transition-all"
+                      title="Eliminar">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
-                <!-- Grid de Métricas Simplificado (Solo lo más importante) -->
-                <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Grid de Métricas -->
+                <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div class="stats-mini-box">
                     <p class="metric-label-mini">RTT</p>
                     <p class="text-metric-mini" [ngClass]="{'text-warning-theme': target.latency > 100}">
@@ -179,13 +203,13 @@
                     </p>
                   </div>
                   <div class="stats-mini-box">
-                    <p class="metric-label-mini">PÉRDIDA (PPL)</p>
+                    <p class="metric-label-mini">Pérdida</p>
                     <p class="text-metric-mini"
                       [ngClass]="target.stats?.ppl > 0 ? 'text-danger-theme' : 'text-success-theme'">
                       {{ target.stats?.ppl }}<span class="unit">%</span>
                     </p>
                   </div>
-                  <div class="stats-mini-box flex items-center justify-center">
+                  <div class="hidden md:flex stats-mini-box items-center justify-center">
                     <div class="flex items-center gap-2">
                       <span class="w-2 h-2 rounded-full"
                         [ngClass]="target.alive ? 'bg-success-theme' : 'bg-danger-theme'"></span>
@@ -196,9 +220,8 @@
                 </div>
               </div>
 
-              <!-- Acciones -->
-              <div
-                class="flex items-center gap-3 w-full lg:w-auto justify-end border-t lg:border-t-0 border-theme pt-4 lg:pt-0 mt-2 lg:mt-0">
+              <!-- Acciones Desktop -->
+              <div class="hidden lg:flex items-center gap-3 w-auto justify-end border-t-0 lg:static">
                 <button (click)="openEdit(target); $event.stopPropagation()"
                   class="p-4 bg-main border border-theme rounded-2xl text-muted hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm group/btn"
                   title="Editar">
