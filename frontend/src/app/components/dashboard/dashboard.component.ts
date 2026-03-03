@@ -6,8 +6,8 @@ import { StorageService } from '../../services/storage.service';
 import { AuthService } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { LatencyChartComponent } from '../latency-chart/latency-chart.component';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { LatencyChartComponent } from '../latency-chart/latency-chart.component';
 
 @Component({
     selector: 'app-dashboard',
@@ -39,8 +39,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     isAddModalOpen = false;
     isEditModalOpen = false;
     isDetailsModalOpen = false;
+    isSettingsModalOpen = false;
+    configTab: 'personal' | 'group' = 'personal';
+    testStatus: 'idle' | 'testing' | 'success' | 'error' = 'idle';
+    testErrorMessage = '';
     editingTarget: any = null;
     selectedTarget: any = null;
+
+    telegramSettings = {
+        telegramToken: '',
+        telegramChatId: ''
+    };
 
     private subscriptions: Subscription = new Subscription();
     private socketService = inject(SocketService);
@@ -84,6 +93,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
     closeDetails() {
         this.isDetailsModalOpen = false;
         this.selectedTarget = null;
+    }
+
+    openSettings() {
+        this.isSettingsModalOpen = true;
+    }
+
+    closeSettings() {
+        this.isSettingsModalOpen = false;
+    }
+
+    saveSettings() {
+        if (this.telegramSettings.telegramToken && this.telegramSettings.telegramChatId) {
+            this.socketService.socketInstance.emit('update-notification-settings', this.telegramSettings);
+        }
+    }
+
+    testTelegramConnection() {
+        if (this.telegramSettings.telegramToken && this.telegramSettings.telegramChatId) {
+            this.testStatus = 'testing';
+            this.testErrorMessage = '';
+            this.socketService.socketInstance.emit('test-telegram-notification', this.telegramSettings);
+        }
+    }
+
+    setTab(tab: 'personal' | 'group') {
+        this.configTab = tab;
     }
 
     ngOnInit() {
@@ -134,6 +169,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
             const target = this.targets.find(t => t.id === data.id);
             if (target && target.audioAlert) {
                 this.playAlertSound(data.status);
+            }
+        });
+
+        // Listen for notification settings update confirmation
+        (this.socketService as any).socket?.on('notification-settings-updated', (response: any) => {
+            if (response.success) {
+                alert('Configuración de Telegram guardada correctamente.');
+                this.closeSettings();
+                this.testStatus = 'idle';
+            }
+        });
+
+        // Listen for test notification results
+        (this.socketService as any).socket?.on('test-notification-result', (response: any) => {
+            if (response.success) {
+                this.testStatus = 'success';
+            } else {
+                this.testStatus = 'error';
+                this.testErrorMessage = response.error;
             }
         });
     }

@@ -44,6 +44,14 @@
     </div>
 
     <div class="flex items-center gap-4">
+      <button (click)="openSettings()"
+        class="px-8 py-3 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white rounded-2xl border border-indigo-500/20 transition-all text-xs font-black uppercase tracking-widest flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        CONFIGURACIÓN DE ALERTAS
+      </button>
       <button (click)="openAdd()"
         class="btn-premium px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 transition-transform hover:scale-105 active:scale-95 shadow-xl">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -170,213 +178,380 @@
       </div>
     </div>
   </main>
-</div>
 
-<!-- Modal Agregar -->
-<div *ngIf="isAddModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="absolute inset-0 modal-backdrop" (click)="closeAdd()"></div>
-  <div
-    class="bg-card w-full max-w-lg rounded-[2.5rem] border-2 border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
-    <div class="p-10 space-y-8">
-      <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-black text-main flex items-center gap-3">
-          <div class="p-2 bg-emerald-500/10 rounded-xl text-emerald-500">
+  <!-- Modal Agregar -->
+  <div *ngIf="isAddModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 modal-backdrop" (click)="closeAdd()"></div>
+    <div
+      class="bg-card w-full max-w-lg rounded-[2.5rem] border-2 border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
+      <div class="p-10 space-y-8">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-black text-main flex items-center gap-3">
+            <div class="p-2 bg-emerald-500/10 rounded-xl text-emerald-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            NUEVO EQUIPO
+          </h2>
+          <button (click)="closeAdd()" class="text-muted hover:text-main">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
             </svg>
+          </button>
+        </div>
+
+        <form (submit)="addServer(); closeAdd()" class="space-y-6">
+          <div class="space-y-2">
+            <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Etiqueta de
+              Servicio</label>
+            <input name="name" [(ngModel)]="newServer.name" type="text" placeholder="Ej: Router Frontera"
+              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-sm font-bold focus:border-emerald-500 outline-none transition-all shadow-inner">
           </div>
-          NUEVO EQUIPO
-        </h2>
-        <button (click)="closeAdd()" class="text-muted hover:text-main">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
 
-      <form (submit)="addServer(); closeAdd()" class="space-y-6">
-        <div class="space-y-2">
-          <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Etiqueta de Servicio</label>
-          <input name="name" [(ngModel)]="newServer.name" type="text" placeholder="Ej: Router Frontera"
-            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-sm font-bold focus:border-emerald-500 outline-none transition-all shadow-inner">
-        </div>
-
-        <div class="space-y-2">
-          <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Sede</label>
-          <select name="category" [(ngModel)]="newServer.category"
-            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-emerald-500 outline-none appearance-none cursor-pointer">
-            <option *ngFor="let s of sedes" [value]="s">{{s}}</option>
-          </select>
-        </div>
-
-        <div class="space-y-2">
-          <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Tipo de Servicio</label>
-          <select name="type" [(ngModel)]="newServer.type"
-            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-emerald-500 outline-none appearance-none cursor-pointer">
-            <option *ngFor="let t of tipos" [value]="t">{{t}}</option>
-          </select>
-        </div>
-
-        <div class="space-y-2">
-          <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Dirección IP</label>
-          <input name="ip" [(ngModel)]="newServer.ip" type="text" placeholder="0.0.0.0"
-            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xl font-black focus:border-emerald-500 outline-none transition-all font-mono shadow-inner text-center">
-        </div>
-
-        <button type="submit" [disabled]="!newServer.name || !newServer.ip"
-          class="w-full btn-premium font-black py-5 rounded-2xl transition-all uppercase tracking-[0.2em] text-xs mt-4 hover:scale-[1.02] active:scale-95 disabled:opacity-30">
-          INICIAR MONITOREO
-        </button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Detalles -->
-<div *ngIf="isDetailsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="absolute inset-0 modal-backdrop" (click)="closeDetails()"></div>
-  <div
-    class="bg-card w-full max-w-4xl rounded-[2.5rem] border border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
-    <div class="p-8 md:p-12 space-y-8">
-      <div class="flex justify-between items-start">
-        <div>
-          <h2 class="text-3xl font-black text-main leading-none">{{ selectedTarget?.name }}</h2>
-          <div class="flex items-center gap-2 mt-3">
-            <span
-              class="px-3 py-1 bg-main border border-theme rounded-lg text-[10px] font-black text-muted uppercase tracking-widest">{{
-              selectedTarget?.category }}</span>
-            <span
-              class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[10px] font-black text-blue-500 uppercase tracking-widest">{{
-              selectedTarget?.type || 'Otros' }}</span>
-            <span class="px-3 py-1 bg-main border border-theme rounded-lg text-[10px] font-mono text-muted">{{
-              selectedTarget?.ip }}</span>
-          </div>
-        </div>
-        <button (click)="closeDetails()"
-          class="p-4 bg-shadow rounded-2xl border border-theme text-muted hover:text-main transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- Gráfica Expandida con Control de Rango -->
-      <div class="bg-main/50 rounded-3xl border border-theme p-6">
-        <div class="flex justify-between items-center mb-4">
-          <p class="metric-label">Historial de Latencia</p>
-          <div class="flex items-center gap-3">
-            <span class="text-[10px] font-black text-muted uppercase">Puntos:</span>
-            <select [(ngModel)]="chartPoints"
-              class="bg-card border border-theme rounded-lg px-2 py-1 text-[10px] font-bold outline-none">
-              <option [ngValue]="10">10 (Zoom Max)</option>
-              <option [ngValue]="20">20 (Normal)</option>
-              <option [ngValue]="50">50 (Amplio)</option>
-              <option [ngValue]="100">100 (Todo)</option>
+          <div class="space-y-2">
+            <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Sede</label>
+            <select name="category" [(ngModel)]="newServer.category"
+              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-emerald-500 outline-none appearance-none cursor-pointer">
+              <option *ngFor="let s of sedes" [value]="s">{{s}}</option>
             </select>
           </div>
-        </div>
-        <div class="h-[300px]">
-          <app-latency-chart [ip]="selectedTarget?.ip" [maxPoints]="chartPoints"></app-latency-chart>
-        </div>
-      </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
-        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Enviados (SQ)</p>
-          <p class="text-2xl font-black text-blue-500 mt-1">{{ selectedTarget?.stats?.sq }}</p>
+          <div class="space-y-2">
+            <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Tipo de Servicio</label>
+            <select name="type" [(ngModel)]="newServer.type"
+              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-emerald-500 outline-none appearance-none cursor-pointer">
+              <option *ngFor="let t of tipos" [value]="t">{{t}}</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Dirección IP</label>
+            <input name="ip" [(ngModel)]="newServer.ip" type="text" placeholder="0.0.0.0"
+              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xl font-black focus:border-emerald-500 outline-none transition-all font-mono shadow-inner text-center">
+          </div>
+
+          <button type="submit" [disabled]="!newServer.name || !newServer.ip"
+            class="w-full btn-premium font-black py-5 rounded-2xl transition-all uppercase tracking-[0.2em] text-xs mt-4 hover:scale-[1.02] active:scale-95 disabled:opacity-30">
+            INICIAR MONITOREO
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detalles -->
+  <div *ngIf="isDetailsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 modal-backdrop" (click)="closeDetails()"></div>
+    <div
+      class="bg-card w-full max-w-4xl rounded-[2.5rem] border border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
+      <div class="p-8 md:p-12 space-y-8">
+        <div class="flex justify-between items-start">
+          <div>
+            <h2 class="text-3xl font-black text-main leading-none">{{ selectedTarget?.name }}</h2>
+            <div class="flex items-center gap-2 mt-3">
+              <span
+                class="px-3 py-1 bg-main border border-theme rounded-lg text-[10px] font-black text-muted uppercase tracking-widest">{{
+                selectedTarget?.category }}</span>
+              <span
+                class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[10px] font-black text-blue-500 uppercase tracking-widest">{{
+                selectedTarget?.type || 'Otros' }}</span>
+              <span class="px-3 py-1 bg-main border border-theme rounded-lg text-[10px] font-mono text-muted">{{
+                selectedTarget?.ip }}</span>
+            </div>
+          </div>
+          <button (click)="closeDetails()"
+            class="p-4 bg-shadow rounded-2xl border border-theme text-muted hover:text-main transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Recibidos (RP)</p>
-          <p class="text-2xl font-black text-success-theme mt-1">{{ selectedTarget?.stats?.rp }}</p>
+
+        <!-- Gráfica Expandida con Control de Rango -->
+        <div class="bg-main/50 rounded-3xl border border-theme p-6">
+          <div class="flex justify-between items-center mb-4">
+            <p class="metric-label">Historial de Latencia</p>
+            <div class="flex items-center gap-3">
+              <span class="text-[10px] font-black text-muted uppercase">Puntos:</span>
+              <select [(ngModel)]="chartPoints"
+                class="bg-card border border-theme rounded-lg px-2 py-1 text-[10px] font-bold outline-none">
+                <option [ngValue]="10">10 (Zoom Max)</option>
+                <option [ngValue]="20">20 (Normal)</option>
+                <option [ngValue]="50">50 (Amplio)</option>
+                <option [ngValue]="100">100 (Todo)</option>
+              </select>
+            </div>
+          </div>
+          <div class="h-[300px]">
+            <app-latency-chart [ip]="selectedTarget?.ip" [maxPoints]="chartPoints"></app-latency-chart>
+          </div>
         </div>
-        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Perdidos (LP)</p>
-          <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.lp }}</p>
-        </div>
-        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Pérdida (PPL)</p>
-          <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.ppl }}%</p>
-        </div>
-        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Mínimo</p>
-          <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.min }}ms</p>
-        </div>
-        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Máximo</p>
-          <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.max }}ms</p>
-        </div>
-        <div class="bg-main/50 p-6 rounded-2xl border border-theme">
-          <p class="metric-label">Promedio</p>
-          <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.avg }}ms</p>
-        </div>
-        <div class="bg-main/50 p-6 rounded-2xl border border-theme border-accent/20 bg-accent/5">
-          <p class="metric-label text-accent">Status</p>
-          <p class="text-2xl font-black mt-1"
-            [ngClass]="selectedTarget?.alive ? 'text-success-theme' : 'text-danger-theme'">
-            {{ selectedTarget?.alive ? 'ONLINE' : 'OFFLINE' }}
-          </p>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
+          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+            <p class="metric-label">Enviados (SQ)</p>
+            <p class="text-2xl font-black text-blue-500 mt-1">{{ selectedTarget?.stats?.sq }}</p>
+          </div>
+          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+            <p class="metric-label">Recibidos (RP)</p>
+            <p class="text-2xl font-black text-success-theme mt-1">{{ selectedTarget?.stats?.rp }}</p>
+          </div>
+          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+            <p class="metric-label">Perdidos (LP)</p>
+            <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.lp }}</p>
+          </div>
+          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+            <p class="metric-label">Pérdida (PPL)</p>
+            <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.ppl }}%</p>
+          </div>
+          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+            <p class="metric-label">Mínimo</p>
+            <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.min }}ms</p>
+          </div>
+          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+            <p class="metric-label">Máximo</p>
+            <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.max }}ms</p>
+          </div>
+          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+            <p class="metric-label">Promedio</p>
+            <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.avg }}ms</p>
+          </div>
+          <div class="bg-main/50 p-6 rounded-2xl border border-theme border-accent/20 bg-accent/5">
+            <p class="metric-label text-accent">Status</p>
+            <p class="text-2xl font-black mt-1"
+              [ngClass]="selectedTarget?.alive ? 'text-success-theme' : 'text-danger-theme'">
+              {{ selectedTarget?.alive ? 'ONLINE' : 'OFFLINE' }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal Editar -->
-<div *ngIf="isEditModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="absolute inset-0 modal-backdrop" (click)="closeEdit()"></div>
-  <div
-    class="bg-card w-full max-w-lg rounded-[2.5rem] border border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
-    <div class="p-10 space-y-8">
-      <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-black text-main tracking-tight uppercase">Editar Servicio</h2>
-        <button (click)="closeEdit()" class="text-muted hover:text-main">
+  <!-- Modal Configuración Telegram -->
+  <div *ngIf="isSettingsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 modal-backdrop" (click)="closeSettings()"></div>
+    <div
+      class="bg-card w-full max-w-4xl rounded-[3rem] border border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-500">
+      <!-- Modal Header -->
+      <div class="p-8 border-b border-theme flex justify-between items-center bg-main/20">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-indigo-500/10 rounded-2xl text-indigo-500 shadow-lg shadow-indigo-500/5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-black text-main tracking-tight uppercase leading-none">Configurar Alertas</h2>
+            <p class="text-[10px] text-muted font-bold uppercase tracking-widest mt-1 opacity-60">Notificaciones
+              Inteligentes de Red</p>
+          </div>
+        </div>
+        <button (click)="closeSettings()"
+          class="p-3 hover:bg-main/50 rounded-2xl text-muted hover:text-main transition-all">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      <div class="space-y-6">
-        <div class="space-y-2">
-          <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Nombre</label>
-          <input [(ngModel)]="editingTarget.name" type="text"
-            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all">
-        </div>
-
-        <div class="space-y-2">
-          <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Dirección IP</label>
-          <input [(ngModel)]="editingTarget.ip" type="text"
-            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-lg font-black focus:border-blue-500 outline-none transition-all font-mono text-center">
-        </div>
-
-        <div class="space-y-2">
-          <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Sede</label>
-          <select name="editCategory" [(ngModel)]="editingTarget.category"
-            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-blue-500 outline-none">
-            <option *ngFor="let s of sedes" [value]="s">{{s}}</option>
-          </select>
-        </div>
-
-        <div class="space-y-2">
-          <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Tipo de Servicio</label>
-          <select name="editType" [(ngModel)]="editingTarget.type"
-            class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-blue-500 outline-none">
-            <option *ngFor="let t of tipos" [value]="t">{{t}}</option>
-          </select>
-        </div>
-
-        <div class="pt-4 flex gap-4">
-          <button (click)="closeEdit()"
-            class="flex-grow py-4 bg-card border border-theme rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-main transition-all">
-            Cancelar
+      <div class="flex flex-col md:flex-row h-[500px]">
+        <!-- Sidebar Tabs -->
+        <div class="w-full md:w-64 bg-main/10 border-r border-theme p-6 space-y-2">
+          <p class="text-[9px] font-black text-muted uppercase tracking-[0.2em] mb-4 opacity-40">Tipo de Alerta</p>
+          <button (click)="setTab('personal')"
+            [ngClass]="{'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20': configTab === 'personal', 'text-muted hover:bg-main/50': configTab !== 'personal'}"
+            class="w-full flex items-center gap-3 p-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Chat Personal
           </button>
-          <button (click)="saveEdit()"
-            class="flex-grow py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:scale-[1.02] active:scale-95 transition-all">
-            Guardar Cambios
+          <button (click)="setTab('group')"
+            [ngClass]="{'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20': configTab === 'group', 'text-muted hover:bg-main/50': configTab !== 'group'}"
+            class="w-full flex items-center gap-3 p-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            Grupo / Canal
           </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-grow p-8 overflow-y-auto space-y-8 scroll-premium">
+
+          <!-- Instructions Guide -->
+          <div class="space-y-4">
+            <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+              ¿Cómo configurar? (Paso a Paso)
+            </h3>
+
+            <div *ngIf="configTab === 'personal'" class="grid gap-3">
+              <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
+                <span
+                  class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">1</span>
+                <p class="text-[11px] font-bold text-muted leading-relaxed">Busca <span
+                    class="text-main">&#64;BotFather</span> en Telegram y crea tu bot para obtener el <span
+                    class="text-indigo-400">Token Secreto</span>.</p>
+              </div>
+              <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
+                <span
+                  class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">2</span>
+                <p class="text-[11px] font-bold text-muted leading-relaxed">Inicia el bot y mándale un saludo. Luego
+                  ejecuta el script <code
+                    class="bg-main px-1.5 py-0.5 rounded text-main">node backend/get-chat-id.js</code> en tu terminal de
+                  servidor.</p>
+              </div>
+            </div>
+
+            <div *ngIf="configTab === 'group'" class="grid gap-3">
+              <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
+                <span
+                  class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">1</span>
+                <p class="text-[11px] font-bold text-muted leading-relaxed">Añade tu bot al grupo y hazlo <span
+                    class="text-main font-black">Administrador</span> para que pueda enviar mensajes.</p>
+              </div>
+              <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
+                <span
+                  class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">2</span>
+                <p class="text-[11px] font-bold text-muted leading-relaxed">Escribe algo en el grupo y usa el script del
+                  servidor. El ID del grupo <span class="text-warning-theme italic">siempre empieza con un "-"</span>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Inputs -->
+          <div class="space-y-6">
+            <div class="space-y-2">
+              <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Telegram Bot
+                Token</label>
+              <input [(ngModel)]="telegramSettings.telegramToken" name="teleToken" type="password"
+                placeholder="123456789:ABCDefGHiJ..."
+                class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-sm font-bold focus:border-indigo-500 outline-none transition-all shadow-inner">
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">
+                {{ configTab === 'personal' ? 'Tu User Chat ID' : 'ID del Grupo / Canal' }}
+              </label>
+              <input [(ngModel)]="telegramSettings.telegramChatId" name="teleChatId" type="text"
+                [placeholder]="configTab === 'personal' ? 'Ej: 947792933' : 'Ej: -1001234567'"
+                class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-lg font-black focus:border-indigo-500 outline-none transition-all font-mono text-center shadow-inner">
+            </div>
+
+            <!-- Testing and Feedback -->
+            <div class="pt-4 space-y-4">
+              <div *ngIf="testStatus !== 'idle'"
+                [ngClass]="{'bg-indigo-500/10 border-indigo-500/20 text-indigo-400': testStatus === 'testing', 'bg-success-theme/10 border-success-theme/20 text-success-theme': testStatus === 'success', 'bg-danger-theme/10 border-danger-theme/20 text-danger-theme': testStatus === 'error'}"
+                class="p-4 rounded-2xl border text-[11px] font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                <svg *ngIf="testStatus === 'testing'" class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                  </path>
+                </svg>
+                <svg *ngIf="testStatus === 'success'" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+                <svg *ngIf="testStatus === 'error'" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span>{{ testStatus === 'testing' ? 'Enviando notificación de prueba...' : (testStatus === 'success' ?
+                  '¡Prueba exitosa! Revisa tu Telegram.' : 'Error: ' + testErrorMessage) }}</span>
+              </div>
+
+              <div class="flex gap-4">
+                <button (click)="testTelegramConnection()"
+                  [disabled]="!telegramSettings.telegramToken || !telegramSettings.telegramChatId || testStatus === 'testing'"
+                  class="flex-grow py-4 bg-main border-2 border-theme rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-theme transition-all disabled:opacity-30">
+                  Probar Conexión
+                </button>
+                <button (click)="saveSettings()"
+                  [disabled]="!telegramSettings.telegramToken || !telegramSettings.telegramChatId || testStatus === 'testing'"
+                  class="flex-grow py-4 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-900/40 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30 disabled:grayscale">
+                  Guardar Cambios
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal Editar -->
+  <div *ngIf="isEditModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 modal-backdrop" (click)="closeEdit()"></div>
+    <div
+      class="bg-card w-full max-w-lg rounded-[2.5rem] border border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
+      <div class="p-10 space-y-8">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-black text-main tracking-tight uppercase">Editar Servicio</h2>
+          <button (click)="closeEdit()" class="text-muted hover:text-main">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Nombre</label>
+            <input [(ngModel)]="editingTarget.name" name="editName" type="text"
+              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all">
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Dirección IP</label>
+            <input [(ngModel)]="editingTarget.ip" name="editIp" type="text"
+              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-lg font-black focus:border-blue-500 outline-none transition-all font-mono text-center">
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Sede</label>
+            <select name="editCategory" [(ngModel)]="editingTarget.category"
+              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-blue-500 outline-none">
+              <option *ngFor="let s of sedes" [value]="s">{{s}}</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Tipo de Servicio</label>
+            <select name="editType" [(ngModel)]="editingTarget.type"
+              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-blue-500 outline-none">
+              <option *ngFor="let t of tipos" [value]="t">{{t}}</option>
+            </select>
+          </div>
+
+          <div class="pt-4 flex gap-4">
+            <button (click)="closeEdit()"
+              class="flex-grow py-4 bg-card border border-theme rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-main transition-all">
+              Cancelar
+            </button>
+            <button (click)="saveEdit()"
+              class="flex-grow py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:scale-[1.02] active:scale-95 transition-all">
+              Guardar Cambios
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Wrapper Closing -->
 </div>
