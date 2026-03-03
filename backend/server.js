@@ -1,9 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const { startMonitoring, getTargets, saveUserTargets, setActiveUsers } = require('./monitor');
-const { register, login, verifyToken } = require('./auth');
+const { register, login, verifyToken, getUserById, updateUserSettings } = require('./auth');
 
 const app = express();
 app.use(cors());
@@ -141,6 +142,17 @@ io.on('connection', (socket) => {
 
     io.to(userId).emit('initial-targets', targets);
     startMonitoring(io);
+  });
+
+  // Actualizar configuración de notificaciones de Telegram
+  socket.on('update-notification-settings', (settings) => {
+    const success = updateUserSettings(userId, {
+      telegramToken: settings.telegramToken,
+      telegramChatId: settings.telegramChatId
+    });
+    if (success) {
+      socket.emit('notification-settings-updated', { success: true });
+    }
   });
 
   socket.on('disconnect', () => {

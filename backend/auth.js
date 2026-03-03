@@ -58,4 +58,20 @@ function verifyToken(token) {
     }
 }
 
-module.exports = { register, login, verifyToken };
+function getUserById(userId) {
+    const users = getUsers();
+    return users.find(u => u.id === userId);
+}
+
+function updateUserSettings(userId, settings) {
+    const users = getUsers();
+    const idx = users.findIndex(u => u.id === userId);
+    if (idx !== -1) {
+        users[idx] = { ...users[idx], ...settings };
+        saveUsers(users);
+        return true;
+    }
+    return false;
+}
+
+module.exports = { register, login, verifyToken, getUserById, updateUserSettings };
