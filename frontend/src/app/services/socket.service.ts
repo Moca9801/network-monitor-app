@@ -2,13 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class SocketService {
     private socket!: Socket;
-    private backendUrl = 'http://localhost:3000';
+    private backendUrl = environment.backendUrl;
     private authService = inject(AuthService);
 
     private targetsSubject = new BehaviorSubject<any[]>([]);
@@ -55,16 +56,40 @@ export class SocketService {
 
     getPingResults(): Observable<any> {
         return new Observable(observer => {
-            if (!this.socket) return;
-            this.socket.on('ping-result', (data: any) => {
+            if (!this.socket) {
+                observer.complete();
+                return undefined;
+            }
+
+            const handler = (data: any) => {
                 observer.next(data);
-            });
+            };
+            this.socket.on('ping-result', handler);
+
+            return () => this.socket?.off('ping-result', handler);
         });
+    }
+
+    onStatusChange(): Observable<any> {
+        return this.listen('status-change');
+    }
+
+    onNotificationSettingsUpdated(): Observable<any> {
+        return this.listen('notification-settings-updated');
+    }
+
+    onTestNotificationResult(): Observable<any> {
+        return this.listen('test-notification-result');
     }
 
     addTarget(target: any) {
         if (!this.socket) return;
         this.socket.emit('add-target', target);
+    }
+
+    editTarget(target: any) {
+        if (!this.socket) return;
+        this.socket.emit('edit-target', target);
     }
 
     removeTarget(id: string) {
@@ -80,5 +105,31 @@ export class SocketService {
     addTargetSettings(id: string, settings: any) {
         if (!this.socket) return;
         this.socket.emit('update-target-settings', { id, settings });
+    }
+
+    updateNotificationSettings(settings: any) {
+        if (!this.socket) return;
+        this.socket.emit('update-notification-settings', settings);
+    }
+
+    testTelegramNotification(settings: any) {
+        if (!this.socket) return;
+        this.socket.emit('test-telegram-notification', settings);
+    }
+
+    private listen(eventName: string): Observable<any> {
+        return new Observable(observer => {
+            if (!this.socket) {
+                observer.complete();
+                return undefined;
+            }
+
+            const handler = (data: any) => {
+                observer.next(data);
+            };
+            this.socket.on(eventName, handler);
+
+            return () => this.socket?.off(eventName, handler);
+        });
     }
 }

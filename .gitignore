@@ -2,6 +2,9 @@
 node_modules/
 dist/
 .env
+backend/users.json
+backend/targets.json
+backend/*.tmp
 
 # Angular
 .angular/

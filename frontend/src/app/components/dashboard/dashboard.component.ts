@@ -81,7 +81,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     saveEdit() {
         if (this.editingTarget) {
-            this.socketService.socketInstance.emit('edit-target', this.editingTarget);
+            this.socketService.editTarget(this.editingTarget);
             this.closeEdit();
         }
     }
@@ -106,7 +106,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     saveSettings() {
         if (this.telegramSettings.telegramToken && this.telegramSettings.telegramChatId) {
-            this.socketService.socketInstance.emit('update-notification-settings', this.telegramSettings);
+            this.socketService.updateNotificationSettings(this.telegramSettings);
         }
     }
 
@@ -114,7 +114,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (this.telegramSettings.telegramToken && this.telegramSettings.telegramChatId) {
             this.testStatus = 'testing';
             this.testErrorMessage = '';
-            this.socketService.socketInstance.emit('test-telegram-notification', this.telegramSettings);
+            this.socketService.testTelegramNotification(this.telegramSettings);
         }
     }
 
@@ -165,32 +165,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
             })
         );
 
-        // Listen for status changes to play sound
-        (this.socketService as any).socket?.on('status-change', (data: any) => {
-            const target = this.targets.find(t => t.id === data.id);
-            if (target && target.audioAlert) {
-                this.playAlertSound(data.status);
-            }
-        });
+        this.subscriptions.add(
+            this.socketService.onStatusChange().subscribe(data => {
+                const target = this.targets.find(t => t.id === data.id);
+                if (target && target.audioAlert) {
+                    this.playAlertSound(data.status);
+                }
+            })
+        );
 
-        // Listen for notification settings update confirmation
-        (this.socketService as any).socket?.on('notification-settings-updated', (response: any) => {
-            if (response.success) {
-                alert('Configuración de Telegram guardada correctamente.');
-                this.closeSettings();
-                this.testStatus = 'idle';
-            }
-        });
+        this.subscriptions.add(
+            this.socketService.onNotificationSettingsUpdated().subscribe(response => {
+                if (response.success) {
+                    alert('Configuración de Telegram guardada correctamente.');
+                    this.closeSettings();
+                    this.testStatus = 'idle';
+                } else {
+                    this.testStatus = 'error';
+                    this.testErrorMessage = response.error || 'No se pudo guardar la configuración.';
+                }
+            })
+        );
 
-        // Listen for test notification results
-        (this.socketService as any).socket?.on('test-notification-result', (response: any) => {
-            if (response.success) {
-                this.testStatus = 'success';
-            } else {
-                this.testStatus = 'error';
-                this.testErrorMessage = response.error;
-            }
-        });
+        this.subscriptions.add(
+            this.socketService.onTestNotificationResult().subscribe(response => {
+                if (response.success) {
+                    this.testStatus = 'success';
+                } else {
+                    this.testStatus = 'error';
+                    this.testErrorMessage = response.error;
+                }
+            })
+        );
     }
 
     loadTheme() {

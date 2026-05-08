@@ -29,7 +29,9 @@ function getTargets(userId = null) {
 }
 
 function saveTargets(targets) {
-    fs.writeFileSync(TARGETS_FILE, JSON.stringify(targets, null, 2));
+    const tmpFile = `${TARGETS_FILE}.tmp`;
+    fs.writeFileSync(tmpFile, JSON.stringify(targets, null, 2));
+    fs.renameSync(tmpFile, TARGETS_FILE);
 }
 
 function saveUserTargets(userId, userTargets) {
@@ -50,6 +52,58 @@ async function pingIP(ip) {
     }
 }
 
+function sendTelegramMessage(botToken, chatId, message) {
+    return new Promise((resolve) => {
+        if (!botToken || !chatId || botToken === 'tu_telegram_bot_token_aqui') {
+            return resolve({ success: false, error: 'Token o Chat ID no configurados' });
+        }
+
+        const teleData = JSON.stringify({
+            chat_id: chatId,
+            text: message,
+            parse_mode: 'HTML'
+        });
+
+        const teleOptions = {
+            hostname: 'api.telegram.org',
+            port: 443,
+            path: `/bot${botToken}/sendMessage`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(teleData)
+            }
+        };
+
+        const teleReq = https.request(teleOptions, (res) => {
+            let body = '';
+            res.on('data', chunk => {
+                body += chunk;
+            });
+            res.on('end', () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    return resolve({ success: true });
+                }
+                return resolve({ success: false, error: body || `HTTP ${res.statusCode}` });
+            });
+        });
+
+        teleReq.on('error', (e) => {
+            resolve({ success: false, error: e.message });
+        });
+        teleReq.write(teleData);
+        teleReq.end();
+    });
+}
+
+async function testNotificationForSettings(settings) {
+    return sendTelegramMessage(
+        settings.telegramToken,
+        settings.telegramChatId,
+        '✅ <b>Prueba exitosa</b>\nLas alertas de Network Monitor están configuradas correctamente.'
+    );
+}
+
 async function sendNotification(message, userId = null) {
     console.log(`[ALERTA]: ${message}`);
 
@@ -66,32 +120,9 @@ async function sendNotification(message, userId = null) {
     }
 
     // 1. Telegram Notification
-    if (botToken && chatId && botToken !== 'tu_telegram_bot_token_aqui') {
-        const teleData = JSON.stringify({
-            chat_id: chatId,
-            text: message,
-            parse_mode: 'HTML'
-        });
-
-        const teleOptions = {
-            hostname: 'api.telegram.org',
-            port: 443,
-            path: `/bot${botToken}/sendMessage`,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': teleData.length
-            }
-        };
-
-        const teleReq = https.request(teleOptions, (res) => {
-            res.on('data', () => { });
-        });
-        teleReq.on('error', (e) => {
-            console.error(`Error en notificación Telegram: ${e.message}`);
-        });
-        teleReq.write(teleData);
-        teleReq.end();
+    const teleResult = await sendTelegramMessage(botToken, chatId, message);
+    if (!teleResult.success && teleResult.error !== 'Token o Chat ID no configurados') {
+        console.error(`Error en notificación Telegram: ${teleResult.error}`);
     }
 
     // 2. Generic Webhook Notification (Keep for compatibility)
@@ -128,8 +159,32 @@ async function sendNotification(message, userId = null) {
 let monitorInterval = null;
 const previousStatus = {};
 
+// --- Alert thresholds ---
+// How many consecutive ping failures before sending a DOWN alert.
+// At a 1-second interval: 3 = ~3s, 5 = ~5s.
+// Industry standard (Zabbix/Nagios default) is 3 consecutive failures.
+const FAIL_THRESHOLD = 3;
+
+// Per-target state for flap prevention
+const alertState = {};
+// Structure per target:
+//   consecutiveFails: number  — running count of consecutive failed pings
+//   alertSent: boolean        — true if a DOWN alert has been sent (avoids repeating)
+
+function clearTargetState(targetId) {
+    delete statsState[targetId];
+    delete previousStatus[targetId];
+    delete alertState[targetId];
+}
+
 function startMonitoring(io) {
+    let isRunning = false;
+
     const runPings = async () => {
+        if (isRunning) return;
+        isRunning = true;
+
+        try {
         let targets = getTargets();
 
         // Filter targets: only ping if userId is in activeUserIds
@@ -197,21 +252,56 @@ function startMonitoring(io) {
                 io.emit('ping-result', payload);
             }
 
-            if (previousStatus[target.id] !== undefined && previousStatus[target.id] !== result.alive) {
-                const statusStr = result.alive ? '✅ RECUPERADO' : '❌ CAÍDO';
-                sendNotification(`Servicio: ${target.name}\nIP: ${target.ip}\nEstado: ${statusStr}\nFecha: ${timestamp}`, target.userId);
-
-                // Audio alert notification for client
-                if (target.userId) {
-                    io.to(target.userId).emit('status-change', {
-                        id: target.id,
-                        name: target.name,
-                        status: result.alive ? 'recovered' : 'down'
-                    });
-                }
+            // --- Flap-prevention alerting ---
+            if (!alertState[target.id]) {
+                alertState[target.id] = { consecutiveFails: 0, alertSent: false };
             }
+            const as = alertState[target.id];
+
+            if (!result.alive) {
+                as.consecutiveFails++;
+                // Fire the DOWN alert only once, after the threshold is exceeded
+                if (as.consecutiveFails >= FAIL_THRESHOLD && !as.alertSent) {
+                    as.alertSent = true;
+                    sendNotification(
+                        `⚠️ <b>EQUIPO CAÍDO</b>\n` +
+                        `Servicio: <b>${target.name}</b>\n` +
+                        `IP: <code>${target.ip}</code>\n` +
+                        `Caído por: ${as.consecutiveFails} pings consecutivos (~${as.consecutiveFails}s)\n` +
+                        `Fecha: ${timestamp}`,
+                        target.userId
+                    );
+                    // Notify frontend to play audio alert
+                    if (target.userId) {
+                        io.to(target.userId).emit('status-change', { id: target.id, name: target.name, status: 'down' });
+                    }
+                }
+            } else {
+                // Host recovered — send recovery alert only if a confirmed outage was active
+                if (as.alertSent) {
+                    sendNotification(
+                        `✅ <b>EQUIPO RECUPERADO</b>\n` +
+                        `Servicio: <b>${target.name}</b>\n` +
+                        `IP: <code>${target.ip}</code>\n` +
+                        `RTT actual: ${result.time}ms\n` +
+                        `Fecha: ${timestamp}`,
+                        target.userId
+                    );
+                    if (target.userId) {
+                        io.to(target.userId).emit('status-change', { id: target.id, name: target.name, status: 'recovered' });
+                    }
+                }
+                // Reset counters on any successful ping
+                as.consecutiveFails = 0;
+                as.alertSent = false;
+            }
+
             previousStatus[target.id] = result.alive;
+
         }));
+        } finally {
+            isRunning = false;
+        }
     };
 
     if (monitorInterval) clearInterval(monitorInterval);
@@ -219,4 +309,12 @@ function startMonitoring(io) {
     monitorInterval = setInterval(runPings, 1000); // 1 second for real-time stats
 }
 
-module.exports = { startMonitoring, getTargets, saveTargets, saveUserTargets, setActiveUsers };
+module.exports = {
+    clearTargetState,
+    getTargets,
+    saveTargets,
+    saveUserTargets,
+    setActiveUsers,
+    startMonitoring,
+    testNotificationForSettings
+};

@@ -3,17 +3,61 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const { startMonitoring, getTargets, saveUserTargets, setActiveUsers } = require('./monitor');
-const { register, login, verifyToken, getUserById, updateUserSettings } = require('./auth');
+const net = require('net');
+const {
+  clearTargetState,
+  getTargets,
+  saveUserTargets,
+  setActiveUsers,
+  startMonitoring,
+  testNotificationForSettings
+} = require('./monitor');
+const { corsOptions, socketCorsOptions } = require('./config');
+const { register, login, verifyToken, updateUserSettings } = require('./auth');
 
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
+
+const MAX_TEXT_LENGTH = 120;
+const HOSTNAME_RE = /^[a-zA-Z0-9.-]+$/;
+
+function isNonEmptyString(value, maxLength = MAX_TEXT_LENGTH) {
+  return typeof value === 'string' && value.trim().length > 0 && value.trim().length <= maxLength;
+}
+
+function isValidHost(value) {
+  const host = typeof value === 'string' ? value.trim() : '';
+  return host.length > 0 && host.length <= 255 && (net.isIP(host) !== 0 || HOSTNAME_RE.test(host));
+}
+
+function normalizeTarget(input) {
+  if (!input || !isNonEmptyString(input.name) || !isValidHost(input.ip)) {
+    return null;
+  }
+
+  return {
+    name: input.name.trim(),
+    ip: input.ip.trim(),
+    description: typeof input.description === 'string' ? input.description.trim().slice(0, 500) : '',
+    category: isNonEmptyString(input.category, 50) ? input.category.trim() : 'Otros',
+    type: isNonEmptyString(input.type, 50) ? input.type.trim() : 'Otros'
+  };
+}
+
+function isValidTelegramSettings(settings) {
+  return settings &&
+    isNonEmptyString(settings.telegramToken, 200) &&
+    isNonEmptyString(settings.telegramChatId, 80);
+}
 
 // Auth Endpoints
 app.post('/api/register', async (req, res) => {
   try {
     const { username, password } = req.body;
+    if (!isNonEmptyString(username, 50) || !isNonEmptyString(password, 200) || password.length < 8) {
+      return res.status(400).json({ error: 'Usuario o contraseña inválidos' });
+    }
     const user = await register(username, password);
     res.status(201).json(user);
   } catch (err) {
@@ -24,6 +68,9 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    if (!isNonEmptyString(username, 50) || !isNonEmptyString(password, 200)) {
+      return res.status(400).json({ error: 'Usuario o contraseña inválidos' });
+    }
     const result = await login(username, password);
     res.json(result);
   } catch (err) {
@@ -33,10 +80,7 @@ app.post('/api/login', async (req, res) => {
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
+  cors: socketCorsOptions
 });
 
 const activeUsers = new Set();
@@ -70,14 +114,17 @@ io.on('connection', (socket) => {
 
   // Agregar nuevo objetivo
   socket.on('add-target', (newTarget) => {
+    const normalizedTarget = normalizeTarget(newTarget);
+    if (!normalizedTarget) {
+      return socket.emit('target-error', { message: 'Datos del objetivo inválidos' });
+    }
+
     const targets = getTargets(userId);
     const id = Date.now().toString();
     const targetWithId = {
-      ...newTarget,
+      ...normalizedTarget,
       id,
       userId,
-      category: newTarget.category || 'Otros',
-      type: newTarget.type || 'Otros',
       audioAlert: true,
       order: targets.length
     };
@@ -91,6 +138,10 @@ io.on('connection', (socket) => {
 
   // Reordenar objetivos
   socket.on('reorder-targets', (newOrder) => {
+    if (!Array.isArray(newOrder) || newOrder.some(id => typeof id !== 'string')) {
+      return socket.emit('target-error', { message: 'Orden inválido' });
+    }
+
     // newOrder should be an array of IDs in the desired order
     const allTargets = getTargets();
     const userTargets = allTargets.filter(t => t.userId === userId);
@@ -107,11 +158,19 @@ io.on('connection', (socket) => {
 
   // Actualizar configuración de un objetivo (ej: bocina)
   socket.on('update-target-settings', (data) => {
+    if (!data) {
+      return socket.emit('target-error', { message: 'Configuración inválida' });
+    }
+
     const { id, settings } = data;
+    if (typeof id !== 'string' || !settings || typeof settings.audioAlert !== 'boolean') {
+      return socket.emit('target-error', { message: 'Configuración inválida' });
+    }
+
     const targets = getTargets(userId);
     const idx = targets.findIndex(t => t.id === id);
     if (idx !== -1) {
-      targets[idx] = { ...targets[idx], ...settings };
+      targets[idx] = { ...targets[idx], audioAlert: settings.audioAlert };
       saveUserTargets(userId, targets);
       io.to(userId).emit('initial-targets', targets);
     }
@@ -119,12 +178,21 @@ io.on('connection', (socket) => {
 
   // Editar datos completos de un objetivo
   socket.on('edit-target', (updatedTarget) => {
+    if (!updatedTarget || typeof updatedTarget.id !== 'string') {
+      return socket.emit('target-error', { message: 'Objetivo inválido' });
+    }
+
+    const normalizedTarget = normalizeTarget(updatedTarget);
+    if (!normalizedTarget) {
+      return socket.emit('target-error', { message: 'Datos del objetivo inválidos' });
+    }
+
     const targets = getTargets(userId);
     const idx = targets.findIndex(t => t.id === updatedTarget.id);
     if (idx !== -1) {
       targets[idx] = {
         ...targets[idx],
-        ...updatedTarget,
+        ...normalizedTarget,
         userId // Asegurar que el userId no se pierda/cambie
       };
       saveUserTargets(userId, targets);
@@ -136,9 +204,14 @@ io.on('connection', (socket) => {
 
   // Eliminar objetivo
   socket.on('remove-target', (id) => {
+    if (typeof id !== 'string') {
+      return socket.emit('target-error', { message: 'Objetivo inválido' });
+    }
+
     let targets = getTargets(userId);
     targets = targets.filter(t => t.id !== id);
     saveUserTargets(userId, targets);
+    clearTargetState(id);
 
     io.to(userId).emit('initial-targets', targets);
     startMonitoring(io);
@@ -146,13 +219,27 @@ io.on('connection', (socket) => {
 
   // Actualizar configuración de notificaciones de Telegram
   socket.on('update-notification-settings', (settings) => {
-    const success = updateUserSettings(userId, {
-      telegramToken: settings.telegramToken,
-      telegramChatId: settings.telegramChatId
-    });
-    if (success) {
-      socket.emit('notification-settings-updated', { success: true });
+    if (!isValidTelegramSettings(settings)) {
+      return socket.emit('notification-settings-updated', { success: false, error: 'Configuración inválida' });
     }
+
+    const success = updateUserSettings(userId, {
+      telegramToken: settings.telegramToken.trim(),
+      telegramChatId: settings.telegramChatId.trim()
+    });
+    socket.emit('notification-settings-updated', { success });
+  });
+
+  socket.on('test-telegram-notification', async (settings) => {
+    if (!isValidTelegramSettings(settings)) {
+      return socket.emit('test-notification-result', { success: false, error: 'Configuración inválida' });
+    }
+
+    const result = await testNotificationForSettings({
+      telegramToken: settings.telegramToken.trim(),
+      telegramChatId: settings.telegramChatId.trim()
+    });
+    socket.emit('test-notification-result', result);
   });
 
   socket.on('disconnect', () => {
