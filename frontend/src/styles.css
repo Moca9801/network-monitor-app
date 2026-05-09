@@ -8,14 +8,14 @@
 :root {
   --bg-main: #020617;
   /* slate-950 */
-  --bg-card: #0a0f1e;
+  --bg-card: #08111f;
   /* deeper, richer card bg */
   --bg-input: #020617;
-  --border-color: #1e293b;
+  --border-color: #23324a;
   /* slate-800 */
   --text-main: #f1f5f9;
   /* slate-100 */
-  --text-muted: #475569;
+  --text-muted: #94a3b8;
   /* slate-600 */
   --status-success: #3b82f6;
   --status-danger: #ef4444;
@@ -69,7 +69,8 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-main);
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59, 130, 246, 0.12), transparent),
+    radial-gradient(ellipse 70% 55% at 50% -10%, rgba(59, 130, 246, 0.18), transparent),
+    radial-gradient(ellipse 50% 40% at 92% 2%, rgba(16, 185, 129, 0.09), transparent),
     radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.06) 1px, transparent 0);
   background-size: 100% 100%, 28px 28px;
   background-attachment: fixed;

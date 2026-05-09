@@ -138,6 +138,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
     }
 
+    getOnlineTargetsCount() {
+        return this.targets.filter(target => target.alive === true).length;
+    }
+
+    getOfflineTargetsCount() {
+        return this.targets.filter(target => target.alive === false).length;
+    }
+
+    getKnownTargetsCount() {
+        return this.targets.filter(target => target.alive !== null && target.alive !== undefined).length;
+    }
+
     ngOnInit() {
         this.loadTheme();
         this.socketService.refreshConnection();
@@ -302,6 +314,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     canRemoveSite(siteName: string) {
         return siteName !== 'Otros' && this.getTargetsByCategory(siteName).length === 0;
+    }
+
+    getSiteStatusSummary(siteName: string) {
+        const targets = this.getTargetsByCategory(siteName);
+        const online = targets.filter(target => target.alive === true).length;
+        const offline = targets.filter(target => target.alive === false).length;
+        return { total: targets.length, online, offline };
     }
 
     getTargetsByCategoryAndType(category: string, type: string) {

@@ -1,24 +1,50 @@
-<div
-  class="min-h-screen bg-main text-main px-3 py-3 md:p-8 max-w-[1200px] mx-auto space-y-8 md:space-y-12 transition-colors duration-500">
-  <!-- Header -->
-  <header
-    class="relative z-20 flex flex-row items-center justify-between bg-card backdrop-blur-xl px-5 py-4 md:p-6 rounded-[2rem] md:rounded-[3rem] border border-theme shadow-2xl gap-4">
-    <div class="flex items-center gap-4 md:gap-8 min-w-0">
-      <div class="space-y-0.5 min-w-0">
-        <h1
-          class="text-xl sm:text-3xl md:text-5xl font-black bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent italic tracking-tighter leading-tight whitespace-nowrap">
-          NETWORK MONITOR
-        </h1>
-        <p class="hidden sm:block text-muted font-bold tracking-[0.2em] text-[10px] uppercase opacity-70">Monitoreo
-          Estratégico de Redes
-        </p>
-      </div>
+<div class="min-h-screen bg-main text-main transition-colors duration-500">
+  <div class="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 lg:px-10 lg:py-8 space-y-6 lg:space-y-8">
+    <!-- Header / Hero -->
+    <header class="premium-shell relative overflow-hidden rounded-[2rem] lg:rounded-[2.75rem] p-5 sm:p-7 lg:p-8">
+      <div
+        class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div class="space-y-5">
+          <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5">
+            <span class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.9)]"></span>
+            <span class="text-[10px] font-black uppercase tracking-[0.28em] text-muted">Monitor en tiempo real</span>
+          </div>
 
-      <!-- Theme Switcher -->
-      <div class="hidden sm:flex bg-main/50 p-1.5 rounded-2xl border border-theme gap-2 shadow-inner">
-        <button (click)="setTheme('dark')"
-          [ngClass]="{'bg-blue-600 text-white shadow-lg': currentTheme === 'dark', 'text-muted hover:text-main': currentTheme !== 'dark'}"
-          class="p-2 rounded-xl transition-all" title="Tema Oscuro">
+          <div class="space-y-2">
+            <h1
+              class="max-w-4xl text-4xl font-black italic leading-none tracking-[-0.08em] sm:text-6xl lg:text-7xl">
+              <span class="bg-gradient-to-r from-blue-300 via-cyan-300 to-emerald-300 bg-clip-text text-transparent">
+                NETWORK MONITOR
+              </span>
+            </h1>
+            <p class="max-w-2xl text-sm font-semibold leading-6 text-muted sm:text-base">
+              Visualiza tus sedes, latencia, pérdida de paquetes y alertas críticas desde un dashboard oscuro y
+              optimizado para operaciones.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 sm:max-w-xl sm:gap-3">
+            <div class="metric-tile">
+              <p class="metric-label">Equipos</p>
+              <p class="text-2xl font-black tracking-tight text-main">{{ targets.length }}</p>
+            </div>
+            <div class="metric-tile">
+              <p class="metric-label">Online</p>
+              <p class="text-2xl font-black tracking-tight text-success-theme">{{ getOnlineTargetsCount() }}</p>
+            </div>
+            <div class="metric-tile">
+              <p class="metric-label">Offline</p>
+              <p class="text-2xl font-black tracking-tight text-danger-theme">{{ getOfflineTargetsCount() }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4 lg:items-end">
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex bg-main/60 p-1.5 rounded-2xl border border-theme gap-1 shadow-inner">
+              <button (click)="setTheme('dark')"
+                [ngClass]="{'bg-blue-600 text-white shadow-lg': currentTheme === 'dark', 'text-muted hover:text-main': currentTheme !== 'dark'}"
+                class="p-2.5 rounded-xl transition-all" title="Tema Oscuro">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
@@ -26,7 +52,7 @@
         </button>
         <button (click)="setTheme('light')"
           [ngClass]="{'bg-blue-500 text-white shadow-lg': currentTheme === 'light', 'text-muted hover:text-main': currentTheme !== 'light'}"
-          class="p-2 rounded-xl transition-all" title="Tema Claro">
+          class="p-2.5 rounded-xl transition-all" title="Tema Claro">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
@@ -34,7 +60,7 @@
         </button>
         <button (click)="setTheme('daltonic')"
           [ngClass]="{'bg-orange-500 text-white shadow-lg': currentTheme === 'daltonic', 'text-muted hover:text-main': currentTheme !== 'daltonic'}"
-          class="p-2 rounded-xl transition-all" title="Tema Daltonismo">
+          class="p-2.5 rounded-xl transition-all" title="Tema Daltonismo">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -42,122 +68,83 @@
               d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
         </button>
-      </div>
-    </div>
+            </div>
 
-    <!-- Botones Desktop (lg+) -->
-    <div class="hidden lg:flex items-center gap-4">
-      <button (click)="openSettings()"
-        class="px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white rounded-2xl border border-indigo-500/20 transition-all text-xs font-black uppercase tracking-widest flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-        Configuración de Alertas
-      </button>
-      <button (click)="openAdd()"
-        class="btn-premium px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-xl">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
-        </svg>
-        Nueva Monitorización
-      </button>
-      <button (click)="logout()"
-        class="px-6 py-3 bg-danger-theme/10 hover:bg-danger-theme text-danger-theme hover:text-white rounded-2xl border border-danger-theme/20 transition-all text-xs font-black uppercase tracking-widest">
-        Cerrar Sesión
-      </button>
-    </div>
+            <button (click)="openSettings()" class="btn-secondary-premium">
+              Alertas
+            </button>
+            <button (click)="openAdd()" class="btn-premium px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-widest">
+              Nueva Monitorización
+            </button>
+          </div>
 
-    <!-- Menú Mobile (< lg): botón "⋯" + dropdown -->
-    <div class="lg:hidden relative">
-      <button (click)="showHeaderMenu = !showHeaderMenu"
-        class="p-3.5 bg-card border border-theme rounded-2xl text-muted hover:text-main hover:border-accent transition-all shadow-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-          <circle cx="5" cy="12" r="2" />
-          <circle cx="12" cy="12" r="2" />
-          <circle cx="19" cy="12" r="2" />
-        </svg>
-      </button>
-
-      <!-- Backdrop para cerrar el menu -->
-      <div *ngIf="showHeaderMenu" class="fixed inset-0 z-40" (click)="showHeaderMenu = false"></div>
-
-      <!-- Dropdown Panel -->
-      <div *ngIf="showHeaderMenu"
-        class="absolute right-0 top-14 z-50 w-64 bg-card border border-theme rounded-[2rem] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-        <div class="p-3 space-y-1">
-          <button (click)="openSettings(); showHeaderMenu = false"
-            class="w-full flex items-center gap-4 px-5 py-4 rounded-[1.5rem] text-indigo-400 hover:bg-indigo-500/10 transition-all text-xs font-black uppercase tracking-widest">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            Configuración de Alertas
-          </button>
-          <button (click)="openAdd(); showHeaderMenu = false"
-            class="w-full flex items-center gap-4 px-5 py-4 rounded-[1.5rem] text-success-theme hover:bg-success-theme/10 transition-all text-xs font-black uppercase tracking-widest">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
-            </svg>
-            Nueva Monitorización
-          </button>
-          <div class="mx-4 my-1 h-px bg-theme opacity-30"></div>
-          <button (click)="logout(); showHeaderMenu = false"
-            class="w-full flex items-center gap-4 px-5 py-4 rounded-[1.5rem] text-danger-theme hover:bg-danger-theme/10 transition-all text-xs font-black uppercase tracking-widest">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+          <button (click)="logout()"
+            class="self-start lg:self-end px-4 py-2.5 bg-danger-theme/10 hover:bg-danger-theme text-danger-theme hover:text-white rounded-2xl border border-danger-theme/20 transition-all text-[10px] font-black uppercase tracking-widest">
             Cerrar Sesión
           </button>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- Sedes personalizadas -->
-  <section class="bg-card border border-theme rounded-[2rem] p-5 md:p-6 shadow-xl space-y-4">
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-      <div>
-        <p class="text-[10px] font-black text-muted uppercase tracking-[0.25em] opacity-60">Mis sedes</p>
-        <h2 class="text-lg md:text-2xl font-black text-main tracking-tight">Organiza tus equipos por ubicación</h2>
+    <!-- Sedes personalizadas -->
+    <section class="premium-panel p-4 sm:p-5">
+      <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div class="min-w-0">
+          <p class="eyebrow">Mis sedes</p>
+          <h2 class="text-xl font-black tracking-tight text-main">Organiza tus equipos por ubicación</h2>
+        </div>
+
+        <form (submit)="addSite(); $event.preventDefault()" class="flex flex-col gap-3 sm:flex-row">
+          <input name="newSiteName" [(ngModel)]="newSiteName" type="text" maxlength="50"
+            placeholder="Ej: Oficina Norte" class="premium-input sm:w-64">
+          <button type="submit" [disabled]="!newSiteName.trim()" class="btn-secondary-premium disabled:opacity-30">
+            Crear Sede
+          </button>
+        </form>
       </div>
 
-      <form (submit)="addSite(); $event.preventDefault()" class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-        <input name="newSiteName" [(ngModel)]="newSiteName" type="text" maxlength="50"
-          placeholder="Ej: Oficina Norte"
-          class="bg-main border-2 border-theme rounded-2xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all min-w-0 sm:min-w-[220px]">
-        <button type="submit" [disabled]="!newSiteName.trim()"
-          class="px-5 py-3 bg-blue-600 disabled:opacity-30 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
-          Crear Sede
+      <p *ngIf="siteErrorMessage" class="mt-3 text-danger-theme text-xs font-bold">{{ siteErrorMessage }}</p>
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span *ngFor="let sede of sedes" class="site-chip">
+          {{ sede }}
+          <span class="rounded-full bg-white/[0.06] px-2 py-0.5 text-[9px] text-muted">
+            {{ getTargetsByCategory(sede).length }}
+          </span>
+          <button *ngIf="canRemoveSite(sede)" (click)="removeSite(sede)" title="Eliminar sede"
+            class="text-muted hover:text-danger-theme transition-colors">
+            ×
+          </button>
+        </span>
+      </div>
+    </section>
+
+    <!-- Lista de Equipos -->
+    <main class="space-y-6">
+      <section *ngIf="targets.length === 0" class="premium-panel p-8 sm:p-10 text-center">
+        <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-300">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 4v16m8-8H4" />
+          </svg>
+        </div>
+        <p class="eyebrow">Sin equipos todavía</p>
+        <h2 class="text-2xl font-black tracking-tight text-main">Crea tu primera monitorización</h2>
+        <p class="mx-auto mt-2 max-w-xl text-sm font-semibold leading-6 text-muted">
+          Agrega un host público de prueba o un equipo de tu red autorizada para comenzar a ver métricas en vivo.
+        </p>
+        <button (click)="openAdd()" class="btn-premium mt-6 rounded-2xl px-6 py-3 text-xs font-black uppercase tracking-widest">
+          Nueva Monitorización
         </button>
-      </form>
-    </div>
+      </section>
 
-    <p *ngIf="siteErrorMessage" class="text-danger-theme text-xs font-bold">{{ siteErrorMessage }}</p>
-
-    <div class="flex flex-wrap gap-2">
-      <span *ngFor="let sede of sedes"
-        class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-main border border-theme text-[10px] font-black uppercase tracking-widest text-muted">
-        {{ sede }}
-        <button *ngIf="canRemoveSite(sede)" (click)="removeSite(sede)" title="Eliminar sede"
-          class="text-muted hover:text-danger-theme transition-colors">
-          ×
-        </button>
-      </span>
-    </div>
-  </section>
-
-  <!-- Lista de Equipos (Filas) -->
-  <main class="space-y-12">
-    <div *ngFor="let sede of sedes" class="space-y-8">
-      <div *ngIf="getTargetsByCategory(sede).length > 0">
-        <h2 class="text-base md:text-lg font-black text-main uppercase tracking-[0.25em] mb-5 flex items-center gap-4">
-          <span
-            class="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/15 shadow-lg shadow-blue-500/5">
+      <div *ngFor="let sede of sedes" class="space-y-4">
+        <section *ngIf="getTargetsByCategory(sede).length > 0" class="premium-panel p-4 sm:p-5 lg:p-6">
+          <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-3">
+              <span
+                class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-300 border border-blue-500/15 shadow-lg shadow-blue-500/5">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -165,36 +152,43 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-          </span>
-          <span class="bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent">{{ sede }}</span>
-          <span class="h-px flex-grow"
-            style="background: linear-gradient(to right, rgba(148,163,184,0.15), transparent)"></span>
-        </h2>
+              </span>
+              <div>
+                <p class="eyebrow">Sede</p>
+                <h2 class="text-xl font-black uppercase tracking-[0.18em] text-main">{{ sede }}</h2>
+              </div>
+            </div>
+
+            <div class="flex gap-2 text-[10px] font-black uppercase tracking-widest">
+              <span class="status-pill">{{ getSiteStatusSummary(sede).total }} equipos</span>
+              <span class="status-pill text-success-theme">{{ getSiteStatusSummary(sede).online }} online</span>
+              <span class="status-pill text-danger-theme">{{ getSiteStatusSummary(sede).offline }} offline</span>
+            </div>
+          </div>
 
         <!-- Nested Loop for Types -->
         <div *ngFor="let type of getTypesInCategory(sede)"
-          class="space-y-4 mb-10 last:mb-0 ml-2 md:ml-8 border-l-2 border-theme/10 pl-3 md:pl-10">
-          <h3 class="text-[10px] font-black text-muted uppercase tracking-[0.3em] flex items-center gap-3 opacity-60">
+          class="space-y-3 mb-6 last:mb-0">
+          <h3 class="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.28em] text-muted">
             {{ type }}
-            <span class="h-px flex-grow"
-              style="background: linear-gradient(to right, rgba(148,163,184,0.1), transparent)"></span>
+            <span class="h-px flex-grow bg-gradient-to-r from-white/10 to-transparent"></span>
           </h3>
 
-          <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="space-y-2">
+          <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="grid gap-3">
             <div *ngFor="let target of getTargetsByCategoryAndType(sede, type)" cdkDrag (click)="openDetails(target)"
-              class="group relative flex items-center bg-card border border-theme rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:border-slate-600/60 hover:bg-[rgba(255,255,255,0.02)]">
+              class="target-card group relative cursor-pointer overflow-hidden rounded-3xl border transition-all duration-200">
 
               <!-- Left status strip -->
-              <div class="absolute left-0 top-0 bottom-0 w-[3px]"
-                [ngClass]="target.alive ? 'bg-blue-500' : 'bg-red-500'">
+              <div class="absolute left-0 top-0 bottom-0 w-1"
+                [ngClass]="target.alive ? 'bg-blue-400' : 'bg-red-500'">
               </div>
 
               <!-- Card single row -->
-              <div class="flex items-center w-full pl-5 pr-3 py-[14px] md:pl-6 md:pr-4 md:py-4 gap-3 md:gap-5">
+              <div class="flex flex-col gap-4 p-4 pl-5 md:flex-row md:items-center md:gap-5 md:p-5 md:pl-6">
 
                 <!-- Status dot -->
-                <div class="relative flex-shrink-0">
-                  <div class="w-2 h-2 rounded-full" [ngClass]="target.alive ? 'bg-blue-400' : 'bg-red-500'"
+                <div class="relative hidden flex-shrink-0 md:block">
+                  <div class="w-2.5 h-2.5 rounded-full" [ngClass]="target.alive ? 'bg-blue-400' : 'bg-red-500'"
                     [style.box-shadow]="target.alive ? '0 0 6px rgba(96,165,250,0.9)' : '0 0 6px rgba(239,68,68,0.9)'">
                   </div>
                   <div *ngIf="target.alive" class="absolute inset-0 rounded-full bg-blue-400 animate-ping opacity-50">
@@ -203,57 +197,43 @@
 
                 <!-- Name + IP -->
                 <div class="flex-1 min-w-0">
-                  <p class="font-bold text-[13px] md:text-sm text-main tracking-tight truncate">{{ target.name }}</p>
-                  <p class="font-mono text-[9px] text-muted opacity-40 tracking-wider uppercase mt-0.5">{{ target.ip }}
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="truncate text-base font-black tracking-tight text-main">{{ target.name }}</p>
+                    <span
+                      class="rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-widest"
+                      [ngClass]="target.alive ? 'text-blue-300 border-blue-500/25 bg-blue-500/[0.08]' : 'text-red-300 border-red-500/25 bg-red-500/[0.08]'">
+                      {{ target.alive ? 'Online' : 'Offline' }}
+                    </span>
+                  </div>
+                  <p class="mt-1 font-mono text-[10px] text-muted tracking-wider uppercase">{{ target.ip }}
                   </p>
                 </div>
 
                 <!-- Stats: desktop -->
-                <div class="hidden md:flex items-center divide-x divide-white/[0.05]">
-                  <div class="flex flex-col items-end pr-5">
+                <div class="grid grid-cols-2 gap-2 md:flex md:items-center">
+                  <div class="stat-chip">
                     <span
-                      class="text-[9px] font-semibold uppercase tracking-widest text-muted opacity-40 leading-none mb-1">RTT</span>
-                    <span class="text-sm font-black tabular-nums leading-none"
+                      class="text-[9px] font-semibold uppercase tracking-widest text-muted leading-none mb-1">RTT</span>
+                    <span class="text-base font-black tabular-nums leading-none"
                       [ngClass]="target.latency > 100 ? 'text-amber-400' : 'text-main'">
                       {{ target.latency }}<span class="text-[9px] font-medium opacity-40 ml-0.5">ms</span>
                     </span>
                   </div>
-                  <div class="flex flex-col items-end px-5">
+                  <div class="stat-chip">
                     <span
-                      class="text-[9px] font-semibold uppercase tracking-widest text-muted opacity-40 leading-none mb-1">PPL</span>
-                    <span class="text-sm font-black tabular-nums leading-none"
+                      class="text-[9px] font-semibold uppercase tracking-widest text-muted leading-none mb-1">PPL</span>
+                    <span class="text-base font-black tabular-nums leading-none"
                       [ngClass]="target.stats?.ppl > 0 ? 'text-red-400' : 'text-blue-400'">
                       {{ target.stats?.ppl }}<span class="text-[9px] font-medium opacity-40 ml-0.5">%</span>
                     </span>
                   </div>
-                  <div class="pl-5">
-                    <span
-                      class="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border"
-                      [ngClass]="target.alive ? 'text-blue-400 border-blue-500/25 bg-blue-500/[0.08]' : 'text-red-400 border-red-500/25 bg-red-500/[0.08]'">
-                      <span class="w-1.5 h-1.5 rounded-full"
-                        [ngClass]="target.alive ? 'bg-blue-400' : 'bg-red-500'"></span>
-                      {{ target.alive ? 'Online' : 'Offline' }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Stats: mobile -->
-                <div class="flex md:hidden items-center gap-1.5 flex-shrink-0 text-[10px] font-black tabular-nums">
-                  <span class="px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.05]"
-                    [ngClass]="target.latency > 100 ? 'text-amber-400' : 'text-main'">
-                    {{ target.latency }}<span class="opacity-40 text-[8px]">ms</span>
-                  </span>
-                  <span class="px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.05]"
-                    [ngClass]="target.stats?.ppl > 0 ? 'text-red-400' : 'text-blue-400'">
-                    {{ target.stats?.ppl }}<span class="opacity-40 text-[8px]">%</span>
-                  </span>
                 </div>
 
                 <!-- Actions -->
                 <div
-                  class="flex flex-shrink-0 items-center gap-1 ml-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150">
+                  class="flex flex-shrink-0 items-center gap-1 md:ml-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150">
                   <button (click)="openEdit(target); $event.stopPropagation()" title="Editar"
-                    class="p-2 rounded-xl text-muted/50 hover:text-blue-400 hover:bg-blue-500/10 transition-all">
+                    class="p-2 rounded-xl text-muted hover:text-blue-300 hover:bg-blue-500/10 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                       stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round"
@@ -261,7 +241,7 @@
                     </svg>
                   </button>
                   <button (click)="removeServer(target.id); $event.stopPropagation()" title="Eliminar"
-                    class="p-2 rounded-xl text-muted/50 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                    class="p-2 rounded-xl text-muted hover:text-red-300 hover:bg-red-500/10 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                       stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round"
@@ -278,67 +258,66 @@
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </main>
 
   <!-- Modal Agregar -->
   <div *ngIf="isAddModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 modal-backdrop" (click)="closeAdd()"></div>
-    <div
-      class="bg-card w-full max-w-lg rounded-[2.5rem] border-2 border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
-      <div class="p-10 space-y-8">
-        <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-black text-main flex items-center gap-3">
-            <div class="p-2 bg-emerald-500/10 rounded-xl text-emerald-500">
+    <div class="modal-card w-full max-w-2xl animate-in fade-in zoom-in duration-300">
+      <div class="modal-header">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
               </svg>
-            </div>
-            NUEVO EQUIPO
-          </h2>
-          <button (click)="closeAdd()" class="text-muted hover:text-main">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          </div>
+          <div>
+            <p class="eyebrow">Nueva monitorización</p>
+            <h2 class="text-2xl font-black tracking-tight text-main">Agregar equipo</h2>
+          </div>
         </div>
+        <button (click)="closeAdd()" class="modal-close">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
-        <form (submit)="addServer(); closeAdd()" class="space-y-6">
-          <div class="space-y-2">
-            <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Etiqueta de
-              Servicio</label>
+      <div class="p-6 sm:p-8">
+        <form (submit)="addServer(); closeAdd()" class="grid gap-5 sm:grid-cols-2">
+          <div class="field-group sm:col-span-2">
+            <label class="field-label">Etiqueta de Servicio</label>
             <input name="name" [(ngModel)]="newServer.name" type="text" placeholder="Ej: Router Frontera"
-              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-sm font-bold focus:border-emerald-500 outline-none transition-all shadow-inner">
+              class="premium-input">
           </div>
 
-          <div class="space-y-2">
-            <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Sede</label>
-            <select name="category" [(ngModel)]="newServer.category"
-              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-emerald-500 outline-none appearance-none cursor-pointer">
+          <div class="field-group">
+            <label class="field-label">Sede</label>
+            <select name="category" [(ngModel)]="newServer.category" class="premium-input cursor-pointer">
               <option *ngFor="let s of sedes" [value]="s">{{s}}</option>
             </select>
           </div>
 
-          <div class="space-y-2">
-            <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Tipo de Servicio</label>
-            <select name="type" [(ngModel)]="newServer.type"
-              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-emerald-500 outline-none appearance-none cursor-pointer">
+          <div class="field-group">
+            <label class="field-label">Tipo de Servicio</label>
+            <select name="type" [(ngModel)]="newServer.type" class="premium-input cursor-pointer">
               <option *ngFor="let t of tipos" [value]="t">{{t}}</option>
             </select>
           </div>
 
-          <div class="space-y-2">
-            <label class="block text-[10px] font-black text-muted uppercase tracking-widest">Dirección IP</label>
-            <input name="ip" [(ngModel)]="newServer.ip" type="text" placeholder="0.0.0.0"
-              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xl font-black focus:border-emerald-500 outline-none transition-all font-mono shadow-inner text-center">
+          <div class="field-group sm:col-span-2">
+            <label class="field-label">Dirección IP o Host</label>
+            <input name="ip" [(ngModel)]="newServer.ip" type="text" placeholder="8.8.8.8"
+              class="premium-input text-center font-mono text-lg font-black">
           </div>
 
           <button type="submit" [disabled]="!newServer.name || !newServer.ip"
-            class="w-full btn-premium font-black py-5 rounded-2xl transition-all uppercase tracking-[0.2em] text-xs mt-4 hover:scale-[1.02] active:scale-95 disabled:opacity-30">
-            INICIAR MONITOREO
+            class="btn-premium sm:col-span-2 font-black py-4 rounded-2xl transition-all uppercase tracking-[0.2em] text-xs hover:scale-[1.01] active:scale-95 disabled:opacity-30">
+            Iniciar Monitoreo
           </button>
         </form>
       </div>
@@ -348,25 +327,24 @@
   <!-- Modal Detalles -->
   <div *ngIf="isDetailsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 modal-backdrop" (click)="closeDetails()"></div>
-    <div
-      class="bg-card w-full max-w-4xl rounded-[2.5rem] border border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
-      <div class="p-8 md:p-12 space-y-8">
-        <div class="flex justify-between items-start">
+    <div class="modal-card w-full max-w-5xl animate-in fade-in zoom-in duration-300">
+      <div class="p-6 md:p-8 space-y-7">
+        <div class="flex justify-between items-start gap-5">
           <div>
-            <h2 class="text-3xl font-black text-main leading-none">{{ selectedTarget?.name }}</h2>
+            <p class="eyebrow">Detalle del equipo</p>
+            <h2 class="text-3xl md:text-4xl font-black text-main leading-none tracking-tight">{{ selectedTarget?.name }}</h2>
             <div class="flex items-center gap-2 mt-3">
               <span
-                class="px-3 py-1 bg-main border border-theme rounded-lg text-[10px] font-black text-muted uppercase tracking-widest">{{
+                class="site-chip">{{
                 selectedTarget?.category }}</span>
               <span
-                class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[10px] font-black text-blue-500 uppercase tracking-widest">{{
+                class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-[10px] font-black text-blue-300 uppercase tracking-widest">{{
                 selectedTarget?.type || 'Otros' }}</span>
-              <span class="px-3 py-1 bg-main border border-theme rounded-lg text-[10px] font-mono text-muted">{{
+              <span class="px-3 py-1 bg-main/70 border border-theme rounded-full text-[10px] font-mono text-muted">{{
                 selectedTarget?.ip }}</span>
             </div>
           </div>
-          <button (click)="closeDetails()"
-            class="p-4 bg-shadow rounded-2xl border border-theme text-muted hover:text-main transition-all">
+          <button (click)="closeDetails()" class="modal-close">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
@@ -375,13 +353,13 @@
         </div>
 
         <!-- Gráfica Expandida con Control de Rango -->
-        <div class="bg-main/50 rounded-3xl border border-theme p-6">
+        <div class="premium-panel p-5 sm:p-6">
           <div class="flex justify-between items-center mb-4">
             <p class="metric-label">Historial de Latencia</p>
             <div class="flex items-center gap-3">
               <span class="text-[10px] font-black text-muted uppercase">Puntos:</span>
               <select [(ngModel)]="chartPoints"
-                class="bg-card border border-theme rounded-lg px-2 py-1 text-[10px] font-bold outline-none">
+                class="bg-card border border-theme rounded-xl px-3 py-2 text-[10px] font-bold outline-none">
                 <option [ngValue]="10">10 (Zoom Max)</option>
                 <option [ngValue]="20">20 (Normal)</option>
                 <option [ngValue]="50">50 (Amplio)</option>
@@ -394,36 +372,36 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
-          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div class="metric-card">
             <p class="metric-label">Enviados (SQ)</p>
             <p class="text-2xl font-black text-blue-500 mt-1">{{ selectedTarget?.stats?.sq }}</p>
           </div>
-          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+          <div class="metric-card">
             <p class="metric-label">Recibidos (RP)</p>
             <p class="text-2xl font-black text-success-theme mt-1">{{ selectedTarget?.stats?.rp }}</p>
           </div>
-          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+          <div class="metric-card">
             <p class="metric-label">Perdidos (LP)</p>
             <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.lp }}</p>
           </div>
-          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+          <div class="metric-card">
             <p class="metric-label">Pérdida (PPL)</p>
             <p class="text-2xl font-black text-danger-theme mt-1">{{ selectedTarget?.stats?.ppl }}%</p>
           </div>
-          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+          <div class="metric-card">
             <p class="metric-label">Mínimo</p>
             <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.min }}ms</p>
           </div>
-          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+          <div class="metric-card">
             <p class="metric-label">Máximo</p>
             <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.max }}ms</p>
           </div>
-          <div class="bg-main/50 p-6 rounded-2xl border border-theme">
+          <div class="metric-card">
             <p class="metric-label">Promedio</p>
             <p class="text-2xl font-black text-main mt-1">{{ selectedTarget?.stats?.avg }}ms</p>
           </div>
-          <div class="bg-main/50 p-6 rounded-2xl border border-theme border-accent/20 bg-accent/5">
+          <div class="metric-card border-accent/30 bg-accent/5">
             <p class="metric-label text-accent">Status</p>
             <p class="text-2xl font-black mt-1"
               [ngClass]="selectedTarget?.alive ? 'text-success-theme' : 'text-danger-theme'">
@@ -438,12 +416,11 @@
   <!-- Modal Configuración Telegram -->
   <div *ngIf="isSettingsModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 modal-backdrop" (click)="closeSettings()"></div>
-    <div
-      class="bg-card w-full max-w-4xl rounded-[3rem] border border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-500">
+    <div class="modal-card w-full max-w-5xl animate-in fade-in zoom-in duration-500">
       <!-- Modal Header -->
-      <div class="p-8 border-b border-theme flex justify-between items-center bg-main/20">
+      <div class="modal-header">
         <div class="flex items-center gap-4">
-          <div class="p-3 bg-indigo-500/10 rounded-2xl text-indigo-500 shadow-lg shadow-indigo-500/5">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -451,23 +428,21 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-xl font-black text-main tracking-tight uppercase leading-none">Configurar Alertas</h2>
-            <p class="text-[10px] text-muted font-bold uppercase tracking-widest mt-1 opacity-60">Notificaciones
-              Inteligentes de Red</p>
+            <p class="eyebrow">Alertas</p>
+            <h2 class="text-2xl font-black text-main tracking-tight leading-none">Configurar Telegram</h2>
           </div>
         </div>
-        <button (click)="closeSettings()"
-          class="p-3 hover:bg-main/50 rounded-2xl text-muted hover:text-main transition-all">
+        <button (click)="closeSettings()" class="modal-close">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      <div class="flex flex-col md:flex-row" style="max-height: 70vh; min-height: 400px;">
+      <div class="flex flex-col md:flex-row" style="max-height: 76vh; min-height: 440px;">
         <!-- Sidebar Tabs -->
-        <div class="w-full md:w-64 bg-main/10 border-r border-theme p-6 space-y-2">
-          <p class="text-[9px] font-black text-muted uppercase tracking-[0.2em] mb-4 opacity-40">Tipo de Alerta</p>
+        <div class="w-full md:w-64 bg-main/20 border-r border-theme p-5 space-y-2">
+          <p class="eyebrow mb-4">Tipo de Alerta</p>
           <button (click)="setTab('personal')"
             [ngClass]="{'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20': configTab === 'personal', 'text-muted hover:bg-main/50': configTab !== 'personal'}"
             class="w-full flex items-center gap-3 p-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all">
@@ -491,7 +466,7 @@
         </div>
 
         <!-- Content Area -->
-        <div class="flex-grow p-8 overflow-y-auto space-y-8 scroll-premium">
+        <div class="flex-grow p-6 sm:p-8 overflow-y-auto space-y-8 scroll-premium">
 
           <!-- Instructions Guide -->
           <div class="space-y-4">
@@ -501,14 +476,14 @@
             </h3>
 
             <div *ngIf="configTab === 'personal'" class="grid gap-3">
-              <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
+              <div class="flex gap-4 items-start p-4 bg-main/50 rounded-2xl border border-theme">
                 <span
                   class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">1</span>
                 <p class="text-[11px] font-bold text-muted leading-relaxed">Busca <span
                     class="text-main">&#64;BotFather</span> en Telegram y crea tu bot para obtener el <span
                     class="text-indigo-400">Token Secreto</span>.</p>
               </div>
-              <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
+              <div class="flex gap-4 items-start p-4 bg-main/50 rounded-2xl border border-theme">
                 <span
                   class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">2</span>
                 <p class="text-[11px] font-bold text-muted leading-relaxed">Inicia tu bot y luego busca <span
@@ -518,13 +493,13 @@
             </div>
 
             <div *ngIf="configTab === 'group'" class="grid gap-3">
-              <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
+              <div class="flex gap-4 items-start p-4 bg-main/50 rounded-2xl border border-theme">
                 <span
                   class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">1</span>
                 <p class="text-[11px] font-bold text-muted leading-relaxed">Añade tu bot al grupo y hazlo <span
                     class="text-main font-black">Administrador</span> para que pueda enviar mensajes.</p>
               </div>
-              <div class="flex gap-4 items-start p-4 bg-main/30 rounded-2xl border border-theme">
+              <div class="flex gap-4 items-start p-4 bg-main/50 rounded-2xl border border-theme">
                 <span
                   class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-black border border-indigo-500/20">2</span>
                 <p class="text-[11px] font-bold text-muted leading-relaxed">Escribe cualquier mensaje en el grupo y
@@ -542,7 +517,7 @@
                 Token</label>
               <input [(ngModel)]="telegramSettings.telegramToken" name="teleToken" type="password"
                 placeholder="123456789:ABCDefGHiJ..."
-                class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-sm font-bold focus:border-indigo-500 outline-none transition-all shadow-inner">
+                class="premium-input">
             </div>
 
             <div class="space-y-2">
@@ -551,7 +526,7 @@
               </label>
               <input [(ngModel)]="telegramSettings.telegramChatId" name="teleChatId" type="text"
                 [placeholder]="configTab === 'personal' ? 'Ej: REMOVED_CHAT_ID' : 'Ej: -1001234567'"
-                class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-lg font-black focus:border-indigo-500 outline-none transition-all font-mono text-center shadow-inner">
+                class="premium-input text-center font-mono text-lg font-black">
             </div>
 
             <!-- Testing and Feedback -->
@@ -580,7 +555,7 @@
               <div class="flex gap-4">
                 <button (click)="testTelegramConnection()"
                   [disabled]="!telegramSettings.telegramToken || !telegramSettings.telegramChatId || testStatus === 'testing'"
-                  class="flex-grow py-4 bg-main border-2 border-theme rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-theme transition-all disabled:opacity-30">
+                  class="btn-secondary-premium flex-grow py-4 disabled:opacity-30">
                   Probar Conexión
                 </button>
                 <button (click)="saveSettings()"
@@ -599,51 +574,53 @@
   <!-- Modal Editar -->
   <div *ngIf="isEditModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 modal-backdrop" (click)="closeEdit()"></div>
-    <div
-      class="bg-card w-full max-w-lg rounded-[2.5rem] border border-theme shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
-      <div class="p-10 space-y-8">
-        <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-black text-main tracking-tight uppercase">Editar Servicio</h2>
-          <button (click)="closeEdit()" class="text-muted hover:text-main">
+    <div class="modal-card w-full max-w-2xl animate-in fade-in zoom-in duration-300">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Edición</p>
+          <h2 class="text-2xl font-black text-main tracking-tight">Editar servicio</h2>
+        </div>
+          <button (click)="closeEdit()" class="modal-close">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        </div>
+      </div>
 
-        <div class="space-y-6">
-          <div class="space-y-2">
-            <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Nombre</label>
+      <div class="p-6 sm:p-8">
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div class="field-group sm:col-span-2">
+            <label class="field-label">Nombre</label>
             <input [(ngModel)]="editingTarget.name" name="editName" type="text"
-              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition-all">
+              class="premium-input">
           </div>
 
-          <div class="space-y-2">
-            <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Dirección IP</label>
+          <div class="field-group sm:col-span-2">
+            <label class="field-label">Dirección IP o Host</label>
             <input [(ngModel)]="editingTarget.ip" name="editIp" type="text"
-              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-lg font-black focus:border-blue-500 outline-none transition-all font-mono text-center">
+              class="premium-input text-center font-mono text-lg font-black">
           </div>
 
-          <div class="space-y-2">
-            <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Sede</label>
+          <div class="field-group">
+            <label class="field-label">Sede</label>
             <select name="editCategory" [(ngModel)]="editingTarget.category"
-              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-blue-500 outline-none">
+              class="premium-input cursor-pointer">
               <option *ngFor="let s of sedes" [value]="s">{{s}}</option>
             </select>
           </div>
 
-          <div class="space-y-2">
-            <label class="block text-[10px] font-black text-muted uppercase tracking-[0.2em]">Tipo de Servicio</label>
+          <div class="field-group">
+            <label class="field-label">Tipo de Servicio</label>
             <select name="editType" [(ngModel)]="editingTarget.type"
-              class="w-full bg-main border-2 border-theme rounded-2xl p-4 text-xs font-bold focus:border-blue-500 outline-none">
+              class="premium-input cursor-pointer">
               <option *ngFor="let t of tipos" [value]="t">{{t}}</option>
             </select>
           </div>
 
-          <div class="pt-4 flex gap-4">
+          <div class="pt-2 flex gap-4 sm:col-span-2">
             <button (click)="closeEdit()"
-              class="flex-grow py-4 bg-card border border-theme rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-main transition-all">
+              class="btn-secondary-premium flex-grow py-4">
               Cancelar
             </button>
             <button (click)="saveEdit()"
@@ -657,4 +634,5 @@
   </div>
 
   <!-- Main Wrapper Closing -->
+  </div>
 </div>
