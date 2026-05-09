@@ -13,7 +13,7 @@ const {
   testNotificationForSettings
 } = require('./monitor');
 const { corsOptions, socketCorsOptions } = require('./config');
-const { register, login, verifyToken, updateUserSettings } = require('./auth');
+const { getUserSites, register, login, verifyToken, updateUserSettings, updateUserSites } = require('./auth');
 
 const app = express();
 app.use(cors(corsOptions));
@@ -43,6 +43,23 @@ function normalizeTarget(input) {
     category: isNonEmptyString(input.category, 50) ? input.category.trim() : 'Otros',
     type: isNonEmptyString(input.type, 50) ? input.type.trim() : 'Otros'
   };
+}
+
+function normalizeSiteName(value) {
+  return isNonEmptyString(value, 50) ? value.trim() : null;
+}
+
+function uniqueSites(sites) {
+  const normalizedSites = sites
+    .map(normalizeSiteName)
+    .filter(Boolean);
+  return Array.from(new Set([...normalizedSites, 'Otros']));
+}
+
+function getSitesForUser(userId) {
+  const savedSites = getUserSites(userId);
+  const targetSites = getTargets(userId).map(target => target.category || 'Otros');
+  return uniqueSites([...savedSites, ...targetSites]);
 }
 
 function isValidTelegramSettings(settings) {
@@ -111,6 +128,7 @@ io.on('connection', (socket) => {
 
   // Enviar lista inicial de objetivos del usuario
   socket.emit('initial-targets', getTargets(userId));
+  socket.emit('user-sites', getSitesForUser(userId));
 
   // Agregar nuevo objetivo
   socket.on('add-target', (newTarget) => {
@@ -120,6 +138,13 @@ io.on('connection', (socket) => {
     }
 
     const targets = getTargets(userId);
+    const sites = getSitesForUser(userId);
+    if (!sites.includes(normalizedTarget.category)) {
+      sites.push(normalizedTarget.category);
+      updateUserSites(userId, uniqueSites(sites));
+      socket.emit('user-sites', getSitesForUser(userId));
+    }
+
     const id = Date.now().toString();
     const targetWithId = {
       ...normalizedTarget,
@@ -134,6 +159,38 @@ io.on('connection', (socket) => {
     // Notificar solo a este usuario
     io.to(userId).emit('initial-targets', targets);
     startMonitoring(io);
+  });
+
+  socket.on('add-site', (siteName) => {
+    const normalizedSite = normalizeSiteName(siteName);
+    if (!normalizedSite) {
+      return socket.emit('sites-updated', { success: false, error: 'Nombre de sede inválido' });
+    }
+
+    const sites = uniqueSites([...getSitesForUser(userId), normalizedSite]);
+    const success = updateUserSites(userId, sites);
+    socket.emit('user-sites', sites);
+    socket.emit('sites-updated', { success });
+  });
+
+  socket.on('remove-site', (siteName) => {
+    const normalizedSite = normalizeSiteName(siteName);
+    if (!normalizedSite || normalizedSite === 'Otros') {
+      return socket.emit('sites-updated', { success: false, error: 'No se puede eliminar esta sede' });
+    }
+
+    const targets = getTargets(userId);
+    if (targets.some(target => target.category === normalizedSite)) {
+      return socket.emit('sites-updated', {
+        success: false,
+        error: 'No puedes eliminar una sede que tiene equipos asignados'
+      });
+    }
+
+    const sites = uniqueSites(getSitesForUser(userId).filter(site => site !== normalizedSite));
+    const success = updateUserSites(userId, sites);
+    socket.emit('user-sites', sites);
+    socket.emit('sites-updated', { success });
   });
 
   // Reordenar objetivos

@@ -22,9 +22,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     currentTheme: 'dark' | 'light' | 'daltonic' = 'dark';
     chartPoints: number = 20;
 
-    // Categorías y Tipos
-    sedes = ['CDJ', 'CJJ', 'CL', 'PUENTE GRANDE', 'Otros'];
+    // Sedes y Tipos
+    sedes = ['Otros'];
     tipos = ['Servidor', 'Switch', 'Access Point', 'Radio', 'Enlace', 'Otros'];
+    newSiteName = '';
+    siteErrorMessage = '';
 
     // Form model
     newServer = {
@@ -122,6 +124,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.configTab = tab;
     }
 
+    addSite() {
+        const siteName = this.newSiteName.trim();
+        if (!siteName) return;
+        this.socketService.addSite(siteName);
+        this.newSiteName = '';
+    }
+
+    removeSite(siteName: string) {
+        if (siteName === 'Otros') return;
+        if (confirm(`¿Eliminar la sede "${siteName}"? Solo se puede si no tiene equipos asignados.`)) {
+            this.socketService.removeSite(siteName);
+        }
+    }
+
     ngOnInit() {
         this.loadTheme();
         this.socketService.refreshConnection();
@@ -139,6 +155,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
                         stats: t.stats || existing?.stats || { sq: 0, rp: 0, lp: 0, ppl: '0.0', min: '0', max: '0', avg: '0' }
                     };
                 });
+            })
+        );
+
+        this.subscriptions.add(
+            this.socketService.sites$.subscribe(sites => {
+                const targetSites = this.targets.map(target => target.category || 'Otros');
+                this.sedes = [...new Set([...sites, ...targetSites, 'Otros'])];
+                if (!this.sedes.includes(this.newServer.category)) {
+                    this.newServer.category = this.sedes[0] || 'Otros';
+                }
             })
         );
 
@@ -194,6 +220,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 } else {
                     this.testStatus = 'error';
                     this.testErrorMessage = response.error;
+                }
+            })
+        );
+
+        this.subscriptions.add(
+            this.socketService.onSitesUpdated().subscribe(response => {
+                if (response.success) {
+                    this.siteErrorMessage = '';
+                } else {
+                    this.siteErrorMessage = response.error || 'No se pudo actualizar la sede.';
                 }
             })
         );
@@ -262,6 +298,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     getTargetsByCategory(category: string) {
         return this.targets.filter(t => t.category === category);
+    }
+
+    canRemoveSite(siteName: string) {
+        return siteName !== 'Otros' && this.getTargetsByCategory(siteName).length === 0;
     }
 
     getTargetsByCategoryAndType(category: string, type: string) {

@@ -14,6 +14,8 @@ export class SocketService {
 
     private targetsSubject = new BehaviorSubject<any[]>([]);
     targets$ = this.targetsSubject.asObservable();
+    private sitesSubject = new BehaviorSubject<string[]>(['Otros']);
+    sites$ = this.sitesSubject.asObservable();
 
     constructor() {
         this.connect();
@@ -33,6 +35,10 @@ export class SocketService {
 
         this.socket.on('initial-targets', (targets: any[]) => {
             this.targetsSubject.next(targets);
+        });
+
+        this.socket.on('user-sites', (sites: string[]) => {
+            this.sitesSubject.next(sites);
         });
 
         this.socket.on('connect_error', (err) => {
@@ -82,6 +88,10 @@ export class SocketService {
         return this.listen('test-notification-result');
     }
 
+    onSitesUpdated(): Observable<any> {
+        return this.listen('sites-updated');
+    }
+
     addTarget(target: any) {
         if (!this.socket) return;
         this.socket.emit('add-target', target);
@@ -105,6 +115,16 @@ export class SocketService {
     addTargetSettings(id: string, settings: any) {
         if (!this.socket) return;
         this.socket.emit('update-target-settings', { id, settings });
+    }
+
+    addSite(siteName: string) {
+        if (!this.socket) return;
+        this.socket.emit('add-site', siteName);
+    }
+
+    removeSite(siteName: string) {
+        if (!this.socket) return;
+        this.socket.emit('remove-site', siteName);
     }
 
     updateNotificationSettings(settings: any) {

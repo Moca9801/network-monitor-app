@@ -8,6 +8,7 @@ const { encryptionSecret, jwtSecret } = require('./config');
 const DATA_DIR = process.env.DATA_DIR || __dirname;
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const ENCRYPTED_PREFIX = 'enc:v1:';
+const DEFAULT_SITES = ['Otros'];
 
 function getEncryptionKey() {
     return crypto.createHash('sha256').update(encryptionSecret).digest();
@@ -84,7 +85,8 @@ async function register(username, password) {
     const newUser = {
         id: Date.now().toString(),
         username,
-        password: hashedPassword
+        password: hashedPassword,
+        sites: DEFAULT_SITES
     };
 
     users.push(newUser);
@@ -118,6 +120,15 @@ function getUserById(userId) {
     return user ? sanitizeUser(user) : undefined;
 }
 
+function getUserSites(userId) {
+    const user = getUserById(userId);
+    return Array.isArray(user?.sites) && user.sites.length > 0 ? user.sites : DEFAULT_SITES;
+}
+
+function updateUserSites(userId, sites) {
+    return updateUserSettings(userId, { sites });
+}
+
 function updateUserSettings(userId, settings) {
     const users = readStoredUsers();
     const idx = users.findIndex(u => u.id === userId);
@@ -140,4 +151,12 @@ function updateUserSettings(userId, settings) {
     return false;
 }
 
-module.exports = { register, login, verifyToken, getUserById, updateUserSettings };
+module.exports = {
+    getUserById,
+    getUserSites,
+    register,
+    login,
+    updateUserSettings,
+    updateUserSites,
+    verifyToken
+};
