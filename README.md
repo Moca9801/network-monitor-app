@@ -38,6 +38,9 @@ Antes de usarlo fuera de pruebas locales, crea variables fuertes:
 JWT_SECRET=replace-with-a-long-random-secret
 SECRETS_ENCRYPTION_KEY=replace-with-another-long-random-secret
 CORS_ORIGIN=https://tu-dominio.com
+ALLOW_PRIVATE_TARGETS=false
+MAX_TARGETS_PER_USER=100
+FRONTEND_BACKEND_URL=https://api.tu-dominio.com
 ```
 
 ## Instalación Manual
@@ -56,6 +59,8 @@ En producción configura valores fuertes para:
 JWT_SECRET=change-this-to-a-long-random-secret
 SECRETS_ENCRYPTION_KEY=change-this-to-another-long-random-secret
 CORS_ORIGIN=https://tu-dominio.com
+ALLOW_PRIVATE_TARGETS=true
+MAX_TARGETS_PER_USER=100
 ```
 
 ### 2. Frontend
@@ -70,7 +75,8 @@ Abre [http://localhost:4200](http://localhost:4200) para ver el dashboard.
 
 - Los objetivos a monitorear se agregan desde el dashboard y se persisten en `backend/targets.json`.
 - Las credenciales de Telegram se configuran desde la UI o mediante variables de entorno del backend.
-- La URL del backend para el frontend se define en `frontend/src/environments/environment.ts`.
+- La URL del backend para el frontend usa `frontend/public/app-config.json` en runtime y `frontend/src/environments/environment.ts` como fallback de desarrollo.
+- En Docker puedes configurar esa URL con `FRONTEND_BACKEND_URL`.
 - `backend/users.json` y `backend/targets.json` contienen datos locales de ejecución; no deberían versionarse con datos reales.
 - En Docker, los datos del backend se guardan en el volumen `backend-data`.
 
@@ -79,6 +85,7 @@ Abre [http://localhost:4200](http://localhost:4200) para ver el dashboard.
 - No subas `.env`, `backend/users.json`, `backend/targets.json`, tokens de Telegram, Chat IDs, inventarios de IPs privadas ni secretos JWT.
 - Rota cualquier secreto que haya estado expuesto antes de publicar el repositorio.
 - Limita `CORS_ORIGIN` al dominio real del frontend.
+- En demos públicas deja `ALLOW_PRIVATE_TARGETS=false` para evitar ping a redes privadas/reservadas y ajusta `MAX_TARGETS_PER_USER`.
 - Evita ofrecer una instancia pública que permita a usuarios no confiables monitorear cualquier host.
 - Para una demo pública, usa datos mock o hosts públicos de prueba y desactiva credenciales reales.
 

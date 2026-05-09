@@ -23,6 +23,8 @@ services:
   frontend:
     build:
       context: ./frontend
+    environment:
+      BACKEND_URL: ${FRONTEND_BACKEND_URL:-http://localhost:3000}
     ports:
       - "8080:80"
     depends_on:

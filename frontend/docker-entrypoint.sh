@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+cat > /usr/share/nginx/html/app-config.json <<EOF
+{
+  "backendUrl": "${BACKEND_URL:-http://localhost:3000}"
+}
+EOF
+
+exec nginx -g 'daemon off;'

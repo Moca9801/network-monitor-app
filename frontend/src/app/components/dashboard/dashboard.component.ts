@@ -8,6 +8,25 @@ import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LatencyChartComponent } from '../latency-chart/latency-chart.component';
+import {
+    LogEntry,
+    SiteStatusSummary,
+    Target,
+    TargetInput,
+    TelegramSettings
+} from '../../models/monitoring.models';
+
+type DialogVariant = 'info' | 'danger' | 'success';
+
+interface AppDialog {
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText: string;
+    cancelText: string;
+    variant: DialogVariant;
+    onConfirm: (() => void) | null;
+}
 
 @Component({
     selector: 'app-dashboard',
@@ -17,8 +36,8 @@ import { LatencyChartComponent } from '../latency-chart/latency-chart.component'
     styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-    targets: any[] = [];
-    logs: any[] = [];
+    targets: Target[] = [];
+    logs: LogEntry[] = [];
     currentTheme: 'dark' | 'light' | 'daltonic' = 'dark';
     chartPoints: number = 20;
 
@@ -29,13 +48,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     siteErrorMessage = '';
 
     // Form model
-    newServer = {
+    newServer: TargetInput = {
         name: '',
         ip: '',
         description: '',
         category: 'Otros',
         type: 'Servidor'
     };
+    editingTarget: Target = this.createEmptyTarget();
 
     // Modal States
     isAddModalOpen = false;
@@ -46,19 +66,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     configTab: 'personal' | 'group' = 'personal';
     testStatus: 'idle' | 'testing' | 'success' | 'error' = 'idle';
     testErrorMessage = '';
-    editingTarget: any = null;
-    selectedTarget: any = null;
-    appDialog = {
+    selectedTarget: Target | null = null;
+    appDialog: AppDialog = {
         isOpen: false,
         title: '',
         message: '',
         confirmText: 'Aceptar',
         cancelText: '',
-        variant: 'info' as 'info' | 'danger' | 'success',
-        onConfirm: null as (() => void) | null
+        variant: 'info',
+        onConfirm: null
     };
 
-    telegramSettings = {
+    telegramSettings: TelegramSettings = {
         telegramToken: '',
         telegramChatId: ''
     };
@@ -71,6 +90,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     constructor() { }
 
+    private createEmptyTarget(): Target {
+        return {
+            ...this.newServer,
+            id: '',
+            alive: null,
+            latency: 0,
+            stats: { sq: 0, rp: 0, lp: 0, ppl: '0.0', min: '0', max: '0', avg: '0' }
+        };
+    }
+
     openAdd() {
         this.isAddModalOpen = true;
     }
@@ -80,14 +109,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         // Reset form if needed, though newServer is already there
     }
 
-    openEdit(target: any) {
+    openEdit(target: Target) {
         this.editingTarget = { ...target };
         this.isEditModalOpen = true;
     }
 
     closeEdit() {
         this.isEditModalOpen = false;
-        this.editingTarget = null;
+        this.editingTarget = this.createEmptyTarget();
     }
 
     saveEdit() {
@@ -97,7 +126,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
     }
 
-    openDetails(target: any) {
+    openDetails(target: Target) {
         this.selectedTarget = target;
         this.isDetailsModalOpen = true;
     }
@@ -166,6 +195,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return this.targets.filter(target => target.alive !== null && target.alive !== undefined).length;
     }
 
+    hasPacketLoss(target: Target) {
+        return Number(target.stats.ppl) > 0;
+    }
+
     ngOnInit() {
         this.loadTheme();
         this.socketService.refreshConnection();
@@ -201,7 +234,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 const index = this.targets.findIndex(t => t.id === result.id);
                 if (index !== -1) {
                     if (this.targets[index].alive !== null && this.targets[index].alive !== result.alive) {
-                        const logEntry = {
+                        const logEntry: LogEntry = {
                             name: result.name,
                             status: result.alive ? 'Online' : 'Offline',
                             timestamp: result.timestamp
@@ -252,7 +285,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
                     this.testStatus = 'success';
                 } else {
                     this.testStatus = 'error';
-                    this.testErrorMessage = response.error;
+                    this.testErrorMessage = response.error || 'No se pudo enviar la prueba.';
                 }
             })
         );
@@ -305,7 +338,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
     }
 
-    toggleAudio(target: any) {
+    toggleAudio(target: Target) {
         const newState = !target.audioAlert;
         this.socketService.addTargetSettings(target.id, { audioAlert: newState });
     }
@@ -330,13 +363,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
         });
     }
 
-    onDrop(event: CdkDragDrop<any[]>) {
+    onDrop(event: CdkDragDrop<Target[]>) {
         moveItemInArray(this.targets, event.previousIndex, event.currentIndex);
         const newOrder = this.targets.map(t => t.id);
         this.socketService.reorderTargets(newOrder);
     }
 
-    getTargetsByCategory(category: string) {
+    getTargetsByCategory(category: string): Target[] {
         return this.targets.filter(t => t.category === category);
     }
 
@@ -344,7 +377,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return siteName !== 'Otros' && this.getTargetsByCategory(siteName).length === 0;
     }
 
-    getSiteStatusSummary(siteName: string) {
+    getSiteStatusSummary(siteName: string): SiteStatusSummary {
         const targets = this.getTargetsByCategory(siteName);
         const online = targets.filter(target => target.alive === true).length;
         const offline = targets.filter(target => target.alive === false).length;
@@ -355,7 +388,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return this.targets.filter(t => t.category === category && (t.type || 'Otros') === type);
     }
 
-    getTypesInCategory(category: string) {
+    getTypesInCategory(category: string): string[] {
         const targets = this.getTargetsByCategory(category);
         const types = [...new Set(targets.map(t => t.type || 'Otros'))];
         return this.tipos.filter(t => types.includes(t));
@@ -371,7 +404,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         message: string;
         confirmText?: string;
         cancelText?: string;
-        variant?: 'info' | 'danger' | 'success';
+        variant?: DialogVariant;
         onConfirm?: () => void;
     }) {
         this.appDialog = {

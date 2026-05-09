@@ -1,26 +1,23 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
-import { environment } from '../../environments/environment';
-
-interface User {
-    id: string;
-    username: string;
-}
-
-interface AuthResponse {
-    user: User;
-    token: string;
-}
+import { AuthResponse, User } from '../models/monitoring.models';
+import { AppConfigService } from './app-config.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = `${environment.backendUrl}/api`;
     currentUser = signal<User | null>(this.getUserFromStorage());
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private appConfig: AppConfigService
+    ) { }
+
+    private get apiUrl() {
+        return `${this.appConfig.backendUrl}/api`;
+    }
 
     register(username: string, password: string) {
         return this.http.post<User>(`${this.apiUrl}/register`, { username, password });

@@ -2,17 +2,25 @@ import { Injectable, inject } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { AuthService } from './auth.service';
-import { environment } from '../../environments/environment';
+import { AppConfigService } from './app-config.service';
+import {
+    OperationResponse,
+    PingResult,
+    StatusChange,
+    Target,
+    TargetInput,
+    TelegramSettings
+} from '../models/monitoring.models';
 
 @Injectable({
     providedIn: 'root'
 })
 export class SocketService {
     private socket!: Socket;
-    private backendUrl = environment.backendUrl;
     private authService = inject(AuthService);
+    private appConfig = inject(AppConfigService);
 
-    private targetsSubject = new BehaviorSubject<any[]>([]);
+    private targetsSubject = new BehaviorSubject<Target[]>([]);
     targets$ = this.targetsSubject.asObservable();
     private sitesSubject = new BehaviorSubject<string[]>(['Otros']);
     sites$ = this.sitesSubject.asObservable();
@@ -29,11 +37,11 @@ export class SocketService {
             this.socket.disconnect();
         }
 
-        this.socket = io(this.backendUrl, {
+        this.socket = io(this.appConfig.backendUrl, {
             auth: { token }
         });
 
-        this.socket.on('initial-targets', (targets: any[]) => {
+        this.socket.on('initial-targets', (targets: Target[]) => {
             this.targetsSubject.next(targets);
         });
 
@@ -60,14 +68,14 @@ export class SocketService {
         this.connect();
     }
 
-    getPingResults(): Observable<any> {
+    getPingResults(): Observable<PingResult> {
         return new Observable(observer => {
             if (!this.socket) {
                 observer.complete();
                 return undefined;
             }
 
-            const handler = (data: any) => {
+            const handler = (data: PingResult) => {
                 observer.next(data);
             };
             this.socket.on('ping-result', handler);
@@ -76,28 +84,28 @@ export class SocketService {
         });
     }
 
-    onStatusChange(): Observable<any> {
-        return this.listen('status-change');
+    onStatusChange(): Observable<StatusChange> {
+        return this.listen<StatusChange>('status-change');
     }
 
-    onNotificationSettingsUpdated(): Observable<any> {
-        return this.listen('notification-settings-updated');
+    onNotificationSettingsUpdated(): Observable<OperationResponse> {
+        return this.listen<OperationResponse>('notification-settings-updated');
     }
 
-    onTestNotificationResult(): Observable<any> {
-        return this.listen('test-notification-result');
+    onTestNotificationResult(): Observable<OperationResponse> {
+        return this.listen<OperationResponse>('test-notification-result');
     }
 
-    onSitesUpdated(): Observable<any> {
-        return this.listen('sites-updated');
+    onSitesUpdated(): Observable<OperationResponse> {
+        return this.listen<OperationResponse>('sites-updated');
     }
 
-    addTarget(target: any) {
+    addTarget(target: TargetInput) {
         if (!this.socket) return;
         this.socket.emit('add-target', target);
     }
 
-    editTarget(target: any) {
+    editTarget(target: Target) {
         if (!this.socket) return;
         this.socket.emit('edit-target', target);
     }
@@ -112,7 +120,7 @@ export class SocketService {
         this.socket.emit('reorder-targets', newOrder);
     }
 
-    addTargetSettings(id: string, settings: any) {
+    addTargetSettings(id: string, settings: Pick<Target, 'audioAlert'>) {
         if (!this.socket) return;
         this.socket.emit('update-target-settings', { id, settings });
     }
@@ -127,24 +135,24 @@ export class SocketService {
         this.socket.emit('remove-site', siteName);
     }
 
-    updateNotificationSettings(settings: any) {
+    updateNotificationSettings(settings: TelegramSettings) {
         if (!this.socket) return;
         this.socket.emit('update-notification-settings', settings);
     }
 
-    testTelegramNotification(settings: any) {
+    testTelegramNotification(settings: TelegramSettings) {
         if (!this.socket) return;
         this.socket.emit('test-telegram-notification', settings);
     }
 
-    private listen(eventName: string): Observable<any> {
+    private listen<T>(eventName: string): Observable<T> {
         return new Observable(observer => {
             if (!this.socket) {
                 observer.complete();
                 return undefined;
             }
 
-            const handler = (data: any) => {
+            const handler = (data: T) => {
                 observer.next(data);
             };
             this.socket.on(eventName, handler);

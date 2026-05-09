@@ -3,7 +3,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const net = require('net');
+const rateLimit = require('express-rate-limit');
 const {
   clearTargetState,
   getTargets,
@@ -12,46 +12,36 @@ const {
   startMonitoring,
   testNotificationForSettings
 } = require('./monitor');
-const { corsOptions, socketCorsOptions } = require('./config');
+const { corsOptions, maxTargetsPerUser, socketCorsOptions } = require('./config');
 const { getUserSites, register, login, verifyToken, updateUserSettings, updateUserSites } = require('./auth');
+const {
+  credentialsSchema,
+  editTargetSchema,
+  loginSchema,
+  parseSchema,
+  reorderSchema,
+  siteNameSchema,
+  targetIdSchema,
+  targetSchema,
+  targetSettingsSchema,
+  telegramSettingsSchema
+} = require('./validation');
 
 const app = express();
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 
-const MAX_TEXT_LENGTH = 120;
-const HOSTNAME_RE = /^[a-zA-Z0-9.-]+$/;
-
-function isNonEmptyString(value, maxLength = MAX_TEXT_LENGTH) {
-  return typeof value === 'string' && value.trim().length > 0 && value.trim().length <= maxLength;
-}
-
-function isValidHost(value) {
-  const host = typeof value === 'string' ? value.trim() : '';
-  return host.length > 0 && host.length <= 255 && (net.isIP(host) !== 0 || HOSTNAME_RE.test(host));
-}
-
-function normalizeTarget(input) {
-  if (!input || !isNonEmptyString(input.name) || !isValidHost(input.ip)) {
-    return null;
-  }
-
-  return {
-    name: input.name.trim(),
-    ip: input.ip.trim(),
-    description: typeof input.description === 'string' ? input.description.trim().slice(0, 500) : '',
-    category: isNonEmptyString(input.category, 50) ? input.category.trim() : 'Otros',
-    type: isNonEmptyString(input.type, 50) ? input.type.trim() : 'Otros'
-  };
-}
-
-function normalizeSiteName(value) {
-  return isNonEmptyString(value, 50) ? value.trim() : null;
-}
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Intenta de nuevo más tarde.' }
+});
 
 function uniqueSites(sites) {
   const normalizedSites = sites
-    .map(normalizeSiteName)
+    .map(site => parseSchema(siteNameSchema, site))
     .filter(Boolean);
   return Array.from(new Set([...normalizedSites, 'Otros']));
 }
@@ -62,33 +52,47 @@ function getSitesForUser(userId) {
   return uniqueSites([...savedSites, ...targetSites]);
 }
 
-function isValidTelegramSettings(settings) {
-  return settings &&
-    isNonEmptyString(settings.telegramToken, 200) &&
-    isNonEmptyString(settings.telegramChatId, 80);
+function createSocketLimiter(limit, windowMs) {
+  const calls = new Map();
+  return (socket, eventName) => {
+    const key = `${socket.id}:${eventName}`;
+    const now = Date.now();
+    const current = calls.get(key) || { count: 0, resetAt: now + windowMs };
+
+    if (now > current.resetAt) {
+      current.count = 0;
+      current.resetAt = now + windowMs;
+    }
+
+    current.count++;
+    calls.set(key, current);
+    return current.count <= limit;
+  };
 }
 
+const socketLimiter = createSocketLimiter(60, 60 * 1000);
+
 // Auth Endpoints
-app.post('/api/register', async (req, res) => {
+app.post('/api/register', authLimiter, async (req, res) => {
   try {
-    const { username, password } = req.body;
-    if (!isNonEmptyString(username, 50) || !isNonEmptyString(password, 200) || password.length < 8) {
+    const body = parseSchema(credentialsSchema, req.body);
+    if (!body) {
       return res.status(400).json({ error: 'Usuario o contraseña inválidos' });
     }
-    const user = await register(username, password);
+    const user = await register(body.username, body.password);
     res.status(201).json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', authLimiter, async (req, res) => {
   try {
-    const { username, password } = req.body;
-    if (!isNonEmptyString(username, 50) || !isNonEmptyString(password, 200)) {
+    const body = parseSchema(loginSchema, req.body);
+    if (!body) {
       return res.status(400).json({ error: 'Usuario o contraseña inválidos' });
     }
-    const result = await login(username, password);
+    const result = await login(body.username, body.password);
     res.json(result);
   } catch (err) {
     res.status(401).json({ error: err.message });
@@ -132,12 +136,20 @@ io.on('connection', (socket) => {
 
   // Agregar nuevo objetivo
   socket.on('add-target', (newTarget) => {
-    const normalizedTarget = normalizeTarget(newTarget);
+    if (!socketLimiter(socket, 'add-target')) {
+      return socket.emit('target-error', { message: 'Demasiadas acciones. Intenta más tarde.' });
+    }
+
+    const normalizedTarget = parseSchema(targetSchema, newTarget);
     if (!normalizedTarget) {
       return socket.emit('target-error', { message: 'Datos del objetivo inválidos' });
     }
 
     const targets = getTargets(userId);
+    if (targets.length >= maxTargetsPerUser) {
+      return socket.emit('target-error', { message: `Límite de ${maxTargetsPerUser} equipos alcanzado` });
+    }
+
     const sites = getSitesForUser(userId);
     if (!sites.includes(normalizedTarget.category)) {
       sites.push(normalizedTarget.category);
@@ -162,7 +174,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('add-site', (siteName) => {
-    const normalizedSite = normalizeSiteName(siteName);
+    if (!socketLimiter(socket, 'add-site')) {
+      return socket.emit('sites-updated', { success: false, error: 'Demasiadas acciones. Intenta más tarde.' });
+    }
+
+    const normalizedSite = parseSchema(siteNameSchema, siteName);
     if (!normalizedSite) {
       return socket.emit('sites-updated', { success: false, error: 'Nombre de sede inválido' });
     }
@@ -174,7 +190,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('remove-site', (siteName) => {
-    const normalizedSite = normalizeSiteName(siteName);
+    if (!socketLimiter(socket, 'remove-site')) {
+      return socket.emit('sites-updated', { success: false, error: 'Demasiadas acciones. Intenta más tarde.' });
+    }
+
+    const normalizedSite = parseSchema(siteNameSchema, siteName);
     if (!normalizedSite || normalizedSite === 'Otros') {
       return socket.emit('sites-updated', { success: false, error: 'No se puede eliminar esta sede' });
     }
@@ -195,7 +215,8 @@ io.on('connection', (socket) => {
 
   // Reordenar objetivos
   socket.on('reorder-targets', (newOrder) => {
-    if (!Array.isArray(newOrder) || newOrder.some(id => typeof id !== 'string')) {
+    const parsedOrder = parseSchema(reorderSchema, newOrder);
+    if (!parsedOrder) {
       return socket.emit('target-error', { message: 'Orden inválido' });
     }
 
@@ -205,7 +226,7 @@ io.on('connection', (socket) => {
 
     // Update order property
     const updatedUserTargets = userTargets.map(t => {
-      const newIdx = newOrder.indexOf(t.id);
+      const newIdx = parsedOrder.indexOf(t.id);
       return { ...t, order: newIdx !== -1 ? newIdx : t.order };
     }).sort((a, b) => (a.order || 0) - (b.order || 0));
 
@@ -215,15 +236,12 @@ io.on('connection', (socket) => {
 
   // Actualizar configuración de un objetivo (ej: bocina)
   socket.on('update-target-settings', (data) => {
-    if (!data) {
+    const parsed = parseSchema(targetSettingsSchema, data);
+    if (!parsed) {
       return socket.emit('target-error', { message: 'Configuración inválida' });
     }
 
-    const { id, settings } = data;
-    if (typeof id !== 'string' || !settings || typeof settings.audioAlert !== 'boolean') {
-      return socket.emit('target-error', { message: 'Configuración inválida' });
-    }
-
+    const { id, settings } = parsed;
     const targets = getTargets(userId);
     const idx = targets.findIndex(t => t.id === id);
     if (idx !== -1) {
@@ -235,11 +253,11 @@ io.on('connection', (socket) => {
 
   // Editar datos completos de un objetivo
   socket.on('edit-target', (updatedTarget) => {
-    if (!updatedTarget || typeof updatedTarget.id !== 'string') {
-      return socket.emit('target-error', { message: 'Objetivo inválido' });
+    if (!socketLimiter(socket, 'edit-target')) {
+      return socket.emit('target-error', { message: 'Demasiadas acciones. Intenta más tarde.' });
     }
 
-    const normalizedTarget = normalizeTarget(updatedTarget);
+    const normalizedTarget = parseSchema(editTargetSchema, updatedTarget);
     if (!normalizedTarget) {
       return socket.emit('target-error', { message: 'Datos del objetivo inválidos' });
     }
@@ -261,14 +279,15 @@ io.on('connection', (socket) => {
 
   // Eliminar objetivo
   socket.on('remove-target', (id) => {
-    if (typeof id !== 'string') {
+    const parsedId = parseSchema(targetIdSchema, id);
+    if (!parsedId) {
       return socket.emit('target-error', { message: 'Objetivo inválido' });
     }
 
     let targets = getTargets(userId);
-    targets = targets.filter(t => t.id !== id);
+    targets = targets.filter(t => t.id !== parsedId);
     saveUserTargets(userId, targets);
-    clearTargetState(id);
+    clearTargetState(parsedId);
 
     io.to(userId).emit('initial-targets', targets);
     startMonitoring(io);
@@ -276,25 +295,27 @@ io.on('connection', (socket) => {
 
   // Actualizar configuración de notificaciones de Telegram
   socket.on('update-notification-settings', (settings) => {
-    if (!isValidTelegramSettings(settings)) {
+    const parsed = parseSchema(telegramSettingsSchema, settings);
+    if (!parsed) {
       return socket.emit('notification-settings-updated', { success: false, error: 'Configuración inválida' });
     }
 
     const success = updateUserSettings(userId, {
-      telegramToken: settings.telegramToken.trim(),
-      telegramChatId: settings.telegramChatId.trim()
+      telegramToken: parsed.telegramToken,
+      telegramChatId: parsed.telegramChatId
     });
     socket.emit('notification-settings-updated', { success });
   });
 
   socket.on('test-telegram-notification', async (settings) => {
-    if (!isValidTelegramSettings(settings)) {
+    const parsed = parseSchema(telegramSettingsSchema, settings);
+    if (!parsed) {
       return socket.emit('test-notification-result', { success: false, error: 'Configuración inválida' });
     }
 
     const result = await testNotificationForSettings({
-      telegramToken: settings.telegramToken.trim(),
-      telegramChatId: settings.telegramChatId.trim()
+      telegramToken: parsed.telegramToken,
+      telegramChatId: parsed.telegramChatId
     });
     socket.emit('test-notification-result', result);
   });

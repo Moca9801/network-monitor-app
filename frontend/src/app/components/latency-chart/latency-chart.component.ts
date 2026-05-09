@@ -51,8 +51,8 @@ export class LatencyChartComponent implements OnInit, OnDestroy, OnChanges {
             history = history.slice(-this.maxPoints);
         }
 
-        const data = history.map(h => h.latency);
-        const times = history.map(h => new Date(h.timestamp).toLocaleTimeString());
+        const data = history.map(entry => entry.latency);
+        const times = history.map(entry => new Date(entry.timestamp).toLocaleTimeString());
 
         this.chartOption = {
             grid: { left: 0, right: 0, top: 10, bottom: 0 },

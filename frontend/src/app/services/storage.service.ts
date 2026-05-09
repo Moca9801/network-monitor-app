@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HistoryEntry, LogEntry } from '../models/monitoring.models';
 
 @Injectable({
     providedIn: 'root'
@@ -9,19 +10,19 @@ export class StorageService {
 
     constructor() { }
 
-    saveLog(log: any) {
+    saveLog(log: LogEntry) {
         const logs = this.getLogs();
         logs.unshift(log);
         // Keep last 100 logs
         localStorage.setItem(this.LOGS_KEY, JSON.stringify(logs.slice(0, 100)));
     }
 
-    getLogs(): any[] {
+    getLogs(): LogEntry[] {
         const data = localStorage.getItem(this.LOGS_KEY);
         return data ? JSON.parse(data) : [];
     }
 
-    saveHistory(ip: string, entry: any) {
+    saveHistory(ip: string, entry: HistoryEntry) {
         const history = this.getHistory();
         if (!history[ip]) {
             history[ip] = [];
@@ -32,7 +33,7 @@ export class StorageService {
         localStorage.setItem(this.HISTORY_KEY, JSON.stringify(history));
     }
 
-    getHistory(): { [key: string]: any[] } {
+    getHistory(): { [key: string]: HistoryEntry[] } {
         const data = localStorage.getItem(this.HISTORY_KEY);
         return data ? JSON.parse(data) : {};
     }

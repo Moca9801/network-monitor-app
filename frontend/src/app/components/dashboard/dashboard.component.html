@@ -223,8 +223,8 @@
                     <span
                       class="text-[9px] font-semibold uppercase tracking-widest text-muted leading-none mb-1">PPL</span>
                     <span class="text-base font-black tabular-nums leading-none"
-                      [ngClass]="target.stats?.ppl > 0 ? 'text-red-400' : 'text-blue-400'">
-                      {{ target.stats?.ppl }}<span class="text-[9px] font-medium opacity-40 ml-0.5">%</span>
+                      [ngClass]="hasPacketLoss(target) ? 'text-red-400' : 'text-blue-400'">
+                      {{ target.stats.ppl }}<span class="text-[9px] font-medium opacity-40 ml-0.5">%</span>
                     </span>
                   </div>
                 </div>
@@ -368,7 +368,7 @@
             </div>
           </div>
           <div class="h-[300px]">
-            <app-latency-chart [ip]="selectedTarget?.ip" [maxPoints]="chartPoints"></app-latency-chart>
+            <app-latency-chart [ip]="selectedTarget?.ip || ''" [maxPoints]="chartPoints"></app-latency-chart>
           </div>
         </div>
 
