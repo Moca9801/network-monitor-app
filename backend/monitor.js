@@ -4,7 +4,8 @@ const path = require('path');
 const https = require('https');
 const { getUserById } = require('./auth');
 
-const TARGETS_FILE = path.join(__dirname, 'targets.json');
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+const TARGETS_FILE = path.join(DATA_DIR, 'targets.json');
 
 // Memory state for stats
 const statsState = {};
@@ -29,6 +30,7 @@ function getTargets(userId = null) {
 }
 
 function saveTargets(targets) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
     const tmpFile = `${TARGETS_FILE}.tmp`;
     fs.writeFileSync(tmpFile, JSON.stringify(targets, null, 2));
     fs.renameSync(tmpFile, TARGETS_FILE);

@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATA_DIR: /data
+      JWT_SECRET: ${JWT_SECRET:-change-this-before-production}
+      SECRETS_ENCRYPTION_KEY: ${SECRETS_ENCRYPTION_KEY:-change-this-before-production}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      NOTIFICATION_WEBHOOK: ${NOTIFICATION_WEBHOOK:-}
+    ports:
+      - "3000:3000"
+    volumes:
+      - backend-data:/data
+    cap_add:
+      - NET_RAW
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-data:

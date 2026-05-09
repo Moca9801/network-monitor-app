@@ -5,7 +5,8 @@ const path = require('path');
 const crypto = require('crypto');
 const { encryptionSecret, jwtSecret } = require('./config');
 
-const USERS_FILE = path.join(__dirname, 'users.json');
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const ENCRYPTED_PREFIX = 'enc:v1:';
 
 function getEncryptionKey() {
@@ -67,6 +68,7 @@ function getUsers() {
 }
 
 function saveUsers(users) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
     const tmpFile = `${USERS_FILE}.tmp`;
     fs.writeFileSync(tmpFile, JSON.stringify(users, null, 2));
     fs.renameSync(tmpFile, USERS_FILE);
