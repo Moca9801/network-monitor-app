@@ -23,7 +23,7 @@ import { AuthService } from '../services/auth.service';
 
             <div class="space-y-4">
               <h1 class="max-w-4xl text-5xl font-black italic leading-none tracking-[-0.08em] sm:text-6xl lg:text-7xl">
-                <span class="bg-gradient-to-r from-blue-300 via-cyan-300 to-emerald-300 bg-clip-text text-transparent">
+                <span class="inline-block pr-3 pb-1 bg-gradient-to-r from-blue-300 via-cyan-300 to-emerald-300 bg-clip-text text-transparent">
                   NETWORK MONITOR
                 </span>
               </h1>
