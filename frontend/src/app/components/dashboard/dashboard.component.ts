@@ -48,6 +48,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     testErrorMessage = '';
     editingTarget: any = null;
     selectedTarget: any = null;
+    appDialog = {
+        isOpen: false,
+        title: '',
+        message: '',
+        confirmText: 'Aceptar',
+        cancelText: '',
+        variant: 'info' as 'info' | 'danger' | 'success',
+        onConfirm: null as (() => void) | null
+    };
 
     telegramSettings = {
         telegramToken: '',
@@ -133,9 +142,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     removeSite(siteName: string) {
         if (siteName === 'Otros') return;
-        if (confirm(`¿Eliminar la sede "${siteName}"? Solo se puede si no tiene equipos asignados.`)) {
+        this.openDialog({
+            title: 'Eliminar sede',
+            message: `¿Eliminar la sede "${siteName}"? Solo se puede si no tiene equipos asignados.`,
+            confirmText: 'Eliminar sede',
+            cancelText: 'Cancelar',
+            variant: 'danger',
+            onConfirm: () => {
             this.socketService.removeSite(siteName);
-        }
+            }
+        });
     }
 
     getOnlineTargetsCount() {
@@ -215,7 +231,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.subscriptions.add(
             this.socketService.onNotificationSettingsUpdated().subscribe(response => {
                 if (response.success) {
-                    alert('Configuración de Telegram guardada correctamente.');
+                    this.openDialog({
+                        title: 'Alertas guardadas',
+                        message: 'La configuración de Telegram se guardó correctamente.',
+                        confirmText: 'Entendido',
+                        variant: 'success'
+                    });
                     this.closeSettings();
                     this.testStatus = 'idle';
                 } else {
@@ -297,9 +318,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     removeServer(id: string) {
-        if (confirm('¿Estás seguro de que deseas dejar de monitorear este servidor?')) {
+        this.openDialog({
+            title: 'Eliminar monitorización',
+            message: '¿Estás seguro de que deseas dejar de monitorear este servidor?',
+            confirmText: 'Eliminar equipo',
+            cancelText: 'Cancelar',
+            variant: 'danger',
+            onConfirm: () => {
             this.socketService.removeTarget(id);
-        }
+            }
+        });
     }
 
     onDrop(event: CdkDragDrop<any[]>) {
@@ -336,6 +364,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
     logout() {
         this.authService.logout();
         this.router.navigate(['/login']);
+    }
+
+    openDialog(config: {
+        title: string;
+        message: string;
+        confirmText?: string;
+        cancelText?: string;
+        variant?: 'info' | 'danger' | 'success';
+        onConfirm?: () => void;
+    }) {
+        this.appDialog = {
+            isOpen: true,
+            title: config.title,
+            message: config.message,
+            confirmText: config.confirmText || 'Aceptar',
+            cancelText: config.cancelText || '',
+            variant: config.variant || 'info',
+            onConfirm: config.onConfirm || null
+        };
+    }
+
+    closeDialog() {
+        this.appDialog.isOpen = false;
+        this.appDialog.onConfirm = null;
+    }
+
+    confirmDialog() {
+        const action = this.appDialog.onConfirm;
+        this.closeDialog();
+        action?.();
     }
 
     ngOnDestroy() {
