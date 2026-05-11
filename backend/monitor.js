@@ -42,6 +42,50 @@ function saveUserTargets(userId, userTargets) {
     saveTargets(updatedTargets);
 }
 
+function ensureDemoTargets(userId) {
+    const existingTargets = getTargets(userId);
+    if (existingTargets.length > 0) return existingTargets;
+
+    const demoTargets = [
+        {
+            id: 'demo-cloudflare-dns',
+            userId,
+            name: 'Cloudflare DNS',
+            ip: '1.1.1.1',
+            description: 'Objetivo público de ejemplo para demo.',
+            category: 'Cloud',
+            type: 'Servidor',
+            audioAlert: false,
+            order: 0
+        },
+        {
+            id: 'demo-google-dns',
+            userId,
+            name: 'Google DNS',
+            ip: '8.8.8.8',
+            description: 'Objetivo público de ejemplo para demo.',
+            category: 'Demo',
+            type: 'Servidor',
+            audioAlert: false,
+            order: 1
+        },
+        {
+            id: 'demo-example',
+            userId,
+            name: 'Example Site',
+            ip: 'example.com',
+            description: 'Hostname público de ejemplo.',
+            category: 'Demo',
+            type: 'Enlace',
+            audioAlert: false,
+            order: 2
+        }
+    ];
+
+    saveUserTargets(userId, demoTargets);
+    return demoTargets;
+}
+
 async function pingIP(ip) {
     try {
         const res = await ping.promise.probe(ip, { timeout: 10 });
@@ -314,6 +358,7 @@ function startMonitoring(io) {
 module.exports = {
     clearTargetState,
     getTargets,
+    ensureDemoTargets,
     saveTargets,
     saveUserTargets,
     setActiveUsers,

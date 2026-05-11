@@ -4,16 +4,26 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const {
   clearTargetState,
+  ensureDemoTargets,
   getTargets,
   saveUserTargets,
   setActiveUsers,
   startMonitoring,
   testNotificationForSettings
 } = require('./monitor');
-const { corsOptions, maxTargetsPerUser, socketCorsOptions } = require('./config');
-const { getUserSites, register, login, verifyToken, updateUserSettings, updateUserSites } = require('./auth');
+const { corsOptions, demoMode, demoPassword, demoUsername, maxTargetsPerUser, socketCorsOptions } = require('./config');
+const {
+  ensureDemoUser,
+  getUserSites,
+  register,
+  login,
+  verifyToken,
+  updateUserSettings,
+  updateUserSites
+} = require('./auth');
 const {
   credentialsSchema,
   editTargetSchema,
@@ -28,8 +38,11 @@ const {
 } = require('./validation');
 
 const app = express();
+app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10kb' }));
+
+const startedAt = new Date();
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -72,9 +85,59 @@ function createSocketLimiter(limit, windowMs) {
 
 const socketLimiter = createSocketLimiter(60, 60 * 1000);
 
+function getHealthPayload() {
+  const targets = getTargets();
+  return {
+    status: 'ok',
+    uptimeSeconds: Math.floor(process.uptime()),
+    startedAt: startedAt.toISOString(),
+    demoMode,
+    activeUsers: activeUsers.size,
+    totalTargets: targets.length,
+    monitoredTargets: targets.filter(target => activeUsers.has(target.userId)).length
+  };
+}
+
+function isDemoWriteBlocked(socket) {
+  if (!demoMode) return false;
+  socket.emit('target-error', {
+    message: 'La demo es de solo lectura. Despliega tu propia instancia para editar objetivos.'
+  });
+  return true;
+}
+
+function emitDemoSettingsBlocked(socket) {
+  socket.emit('notification-settings-updated', {
+    success: false,
+    error: 'La demo no permite guardar credenciales. Despliega tu propia instancia para configurar Telegram.'
+  });
+}
+
+app.get('/health', (req, res) => {
+  res.json(getHealthPayload());
+});
+
+app.get('/api/demo', async (req, res) => {
+  if (!demoMode) {
+    return res.status(404).json({ error: 'Demo no habilitada' });
+  }
+
+  const user = await ensureDemoUser();
+  ensureDemoTargets(user.id);
+  res.json({
+    username: demoUsername,
+    password: demoPassword,
+    readOnly: true
+  });
+});
+
 // Auth Endpoints
 app.post('/api/register', authLimiter, async (req, res) => {
   try {
+    if (demoMode) {
+      return res.status(403).json({ error: 'El registro está deshabilitado en modo demo' });
+    }
+
     const body = parseSchema(credentialsSchema, req.body);
     if (!body) {
       return res.status(400).json({ error: 'Usuario o contraseña inválidos' });
@@ -131,11 +194,16 @@ io.on('connection', (socket) => {
   socket.join(userId);
 
   // Enviar lista inicial de objetivos del usuario
+  if (demoMode && socket.user.username === demoUsername) {
+    ensureDemoTargets(userId);
+  }
   socket.emit('initial-targets', getTargets(userId));
   socket.emit('user-sites', getSitesForUser(userId));
 
   // Agregar nuevo objetivo
   socket.on('add-target', (newTarget) => {
+    if (isDemoWriteBlocked(socket)) return;
+
     if (!socketLimiter(socket, 'add-target')) {
       return socket.emit('target-error', { message: 'Demasiadas acciones. Intenta más tarde.' });
     }
@@ -174,6 +242,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('add-site', (siteName) => {
+    if (isDemoWriteBlocked(socket)) return;
+
     if (!socketLimiter(socket, 'add-site')) {
       return socket.emit('sites-updated', { success: false, error: 'Demasiadas acciones. Intenta más tarde.' });
     }
@@ -190,6 +260,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('remove-site', (siteName) => {
+    if (isDemoWriteBlocked(socket)) return;
+
     if (!socketLimiter(socket, 'remove-site')) {
       return socket.emit('sites-updated', { success: false, error: 'Demasiadas acciones. Intenta más tarde.' });
     }
@@ -215,6 +287,8 @@ io.on('connection', (socket) => {
 
   // Reordenar objetivos
   socket.on('reorder-targets', (newOrder) => {
+    if (isDemoWriteBlocked(socket)) return;
+
     const parsedOrder = parseSchema(reorderSchema, newOrder);
     if (!parsedOrder) {
       return socket.emit('target-error', { message: 'Orden inválido' });
@@ -236,6 +310,8 @@ io.on('connection', (socket) => {
 
   // Actualizar configuración de un objetivo (ej: bocina)
   socket.on('update-target-settings', (data) => {
+    if (isDemoWriteBlocked(socket)) return;
+
     const parsed = parseSchema(targetSettingsSchema, data);
     if (!parsed) {
       return socket.emit('target-error', { message: 'Configuración inválida' });
@@ -253,6 +329,8 @@ io.on('connection', (socket) => {
 
   // Editar datos completos de un objetivo
   socket.on('edit-target', (updatedTarget) => {
+    if (isDemoWriteBlocked(socket)) return;
+
     if (!socketLimiter(socket, 'edit-target')) {
       return socket.emit('target-error', { message: 'Demasiadas acciones. Intenta más tarde.' });
     }
@@ -279,6 +357,8 @@ io.on('connection', (socket) => {
 
   // Eliminar objetivo
   socket.on('remove-target', (id) => {
+    if (isDemoWriteBlocked(socket)) return;
+
     const parsedId = parseSchema(targetIdSchema, id);
     if (!parsedId) {
       return socket.emit('target-error', { message: 'Objetivo inválido' });
@@ -295,6 +375,10 @@ io.on('connection', (socket) => {
 
   // Actualizar configuración de notificaciones de Telegram
   socket.on('update-notification-settings', (settings) => {
+    if (demoMode) {
+      return emitDemoSettingsBlocked(socket);
+    }
+
     const parsed = parseSchema(telegramSettingsSchema, settings);
     if (!parsed) {
       return socket.emit('notification-settings-updated', { success: false, error: 'Configuración inválida' });
@@ -308,6 +392,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('test-telegram-notification', async (settings) => {
+    if (demoMode) {
+      return socket.emit('test-notification-result', {
+        success: false,
+        error: 'La demo no envía notificaciones reales.'
+      });
+    }
+
     const parsed = parseSchema(telegramSettingsSchema, settings);
     if (!parsed) {
       return socket.emit('test-notification-result', { success: false, error: 'Configuración inválida' });
@@ -331,10 +422,28 @@ io.on('connection', (socket) => {
   });
 });
 
-// Iniciar loop de monitoreo
-startMonitoring(io);
+function startServer() {
+  if (demoMode) {
+    ensureDemoUser()
+      .then(user => ensureDemoTargets(user.id))
+      .catch(err => console.error('No se pudo preparar la demo:', err.message));
+  }
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Backend de monitoreo corriendo en puerto ${PORT}`);
-});
+  startMonitoring(io);
+
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, () => {
+    console.log(`Backend de monitoreo corriendo en puerto ${PORT}`);
+  });
+}
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = {
+  app,
+  getHealthPayload,
+  server,
+  startServer
+};

@@ -31,8 +31,11 @@ const encryptionSecret = process.env.SECRETS_ENCRYPTION_KEY || jwtSecret;
 requireInProduction('SECRETS_ENCRYPTION_KEY o JWT_SECRET', encryptionSecret);
 
 const allowedOrigins = parseOrigins(process.env.CORS_ORIGIN);
+const demoMode = parseBoolean(process.env.DEMO_MODE, false);
 const allowPrivateTargets = parseBoolean(process.env.ALLOW_PRIVATE_TARGETS, process.env.NODE_ENV !== 'production');
 const maxTargetsPerUser = parseInteger(process.env.MAX_TARGETS_PER_USER, 100);
+const demoUsername = process.env.DEMO_USERNAME || 'demo';
+const demoPassword = process.env.DEMO_PASSWORD || 'demo-password';
 
 const corsOptions = {
     origin(origin, callback) {
@@ -52,6 +55,9 @@ module.exports = {
     allowedOrigins,
     allowPrivateTargets,
     corsOptions,
+    demoMode,
+    demoPassword,
+    demoUsername,
     encryptionSecret,
     jwtSecret,
     maxTargetsPerUser,

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SocketService } from '../../services/socket.service';
 import { StorageService } from '../../services/storage.service';
 import { AuthService } from '../../services/auth.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -46,6 +47,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     tipos = ['Servidor', 'Switch', 'Access Point', 'Radio', 'Enlace', 'Otros'];
     newSiteName = '';
     siteErrorMessage = '';
+    connectionStatus: 'idle' | 'connected' | 'disconnected' | 'error' = 'idle';
+    isDemoMode = false;
 
     // Form model
     newServer: TargetInput = {
@@ -86,6 +89,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private socketService = inject(SocketService);
     private storageService = inject(StorageService);
     private authService = inject(AuthService);
+    private appConfig = inject(AppConfigService);
     private router = inject(Router);
 
     constructor() { }
@@ -201,8 +205,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loadTheme();
+        this.isDemoMode = this.appConfig.demoMode;
         this.socketService.refreshConnection();
         this.logs = this.storageService.getLogs();
+
+        this.subscriptions.add(
+            this.socketService.connectionStatus$.subscribe(status => {
+                this.connectionStatus = status;
+            })
+        );
 
         this.subscriptions.add(
             this.socketService.targets$.subscribe(targets => {
@@ -297,6 +308,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 } else {
                     this.siteErrorMessage = response.error || 'No se pudo actualizar la sede.';
                 }
+            })
+        );
+
+        this.subscriptions.add(
+            this.socketService.onTargetError().subscribe(error => {
+                this.openDialog({
+                    title: 'Acción no disponible',
+                    message: error.message,
+                    confirmText: 'Entendido',
+                    variant: 'info'
+                });
             })
         );
     }

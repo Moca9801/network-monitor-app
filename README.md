@@ -47,8 +47,10 @@ network-monitor-app/
 ## Documentación
 
 - [Arquitectura](docs/ARCHITECTURE.md)
+- [Despliegue](docs/DEPLOYMENT.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Changelog](CHANGELOG.md)
 - [Contribuir](CONTRIBUTING.md)
 - [Política de seguridad](SECURITY.md)
 
@@ -74,6 +76,7 @@ CORS_ORIGIN=https://tu-dominio.com
 ALLOW_PRIVATE_TARGETS=false
 MAX_TARGETS_PER_USER=100
 FRONTEND_BACKEND_URL=https://api.tu-dominio.com
+DEMO_MODE=false
 ```
 
 ## Instalación Manual
@@ -94,6 +97,7 @@ SECRETS_ENCRYPTION_KEY=change-this-to-another-long-random-secret
 CORS_ORIGIN=https://tu-dominio.com
 ALLOW_PRIVATE_TARGETS=true
 MAX_TARGETS_PER_USER=100
+DEMO_MODE=false
 ```
 
 ### 2. Frontend
@@ -110,6 +114,7 @@ Abre [http://localhost:4200](http://localhost:4200) para ver el dashboard.
 - Las credenciales de Telegram se configuran desde la UI o mediante variables de entorno del backend.
 - La URL del backend para el frontend usa `frontend/public/app-config.json` en runtime y `frontend/src/environments/environment.ts` como fallback de desarrollo.
 - En Docker puedes configurar esa URL con `FRONTEND_BACKEND_URL`.
+- El modo demo se activa con `DEMO_MODE=true`; crea datos de muestra y bloquea acciones de escritura.
 - `backend/users.json` y `backend/targets.json` contienen datos locales de ejecución; no deberían versionarse con datos reales.
 - En Docker, los datos del backend se guardan en el volumen `backend-data`.
 
@@ -140,6 +145,7 @@ CI ejecuta estas validaciones automáticamente en pull requests hacia `main`.
 - En demos públicas deja `ALLOW_PRIVATE_TARGETS=false` para evitar ping a redes privadas/reservadas y ajusta `MAX_TARGETS_PER_USER`.
 - Evita ofrecer una instancia pública que permita a usuarios no confiables monitorear cualquier host.
 - Para una demo pública, usa datos mock o hosts públicos de prueba y desactiva credenciales reales.
+- El endpoint `GET /health` expone métricas operativas básicas para healthchecks.
 
 Consulta [SECURITY.md](SECURITY.md) para más detalles.
 

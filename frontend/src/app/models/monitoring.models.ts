@@ -63,6 +63,10 @@ export interface OperationResponse {
     error?: string;
 }
 
+export interface TargetError {
+    message: string;
+}
+
 export interface StatusChange {
     id: string;
     name: string;

@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { encryptionSecret, jwtSecret } = require('./config');
+const { demoPassword, demoUsername, encryptionSecret, jwtSecret } = require('./config');
 
 const DATA_DIR = process.env.DATA_DIR || __dirname;
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -94,6 +94,26 @@ async function register(username, password) {
     return { id: newUser.id, username: newUser.username };
 }
 
+async function ensureDemoUser() {
+    const users = readStoredUsers();
+    const existing = users.find(u => u.username === demoUsername);
+    if (existing) {
+        return { id: existing.id, username: existing.username };
+    }
+
+    const hashedPassword = await bcrypt.hash(demoPassword, 10);
+    const demoUser = {
+        id: 'demo-user',
+        username: demoUsername,
+        password: hashedPassword,
+        sites: ['Demo', 'Cloud', 'Otros']
+    };
+
+    users.push(demoUser);
+    saveUsers(users);
+    return { id: demoUser.id, username: demoUser.username };
+}
+
 async function login(username, password) {
     const users = readStoredUsers();
     const user = users.find(u => u.username === username);
@@ -154,6 +174,7 @@ function updateUserSettings(userId, settings) {
 module.exports = {
     getUserById,
     getUserSites,
+    ensureDemoUser,
     register,
     login,
     updateUserSettings,

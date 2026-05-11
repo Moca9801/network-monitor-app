@@ -2,7 +2,9 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
+import { AppConfigService } from '../services/app-config.service';
 
 @Component({
     selector: 'app-login',
@@ -117,6 +119,11 @@ import { AuthService } from '../services/auth.service';
               Entrar al dashboard
             </button>
 
+            <button *ngIf="isDemoMode" type="button" (click)="loginDemo()"
+              class="w-full rounded-2xl border border-amber-300/30 bg-amber-300/10 py-4 text-xs font-black uppercase tracking-[0.22em] text-amber-100 transition hover:bg-amber-300/15">
+              Entrar en modo demo
+            </button>
+
             <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">
               <p class="text-sm font-semibold text-muted">
                 ¿No tienes cuenta?
@@ -150,14 +157,32 @@ export class LoginComponent {
     username = '';
     password = '';
     error = '';
+    isDemoMode = false;
 
     private authService = inject(AuthService);
+    private appConfig = inject(AppConfigService);
+    private http = inject(HttpClient);
     private router = inject(Router);
+
+    constructor() {
+        this.isDemoMode = this.appConfig.demoMode;
+    }
 
     onSubmit() {
         this.authService.login(this.username, this.password).subscribe({
             next: () => this.router.navigate(['/dashboard']),
-            error: (err: any) => this.error = 'Usuario o contraseña incorrectos'
+            error: () => this.error = 'Usuario o contraseña incorrectos'
+        });
+    }
+
+    loginDemo() {
+        this.http.get<{ username: string; password: string }>(`${this.appConfig.backendUrl}/api/demo`).subscribe({
+            next: demo => {
+                this.username = demo.username;
+                this.password = demo.password;
+                this.onSubmit();
+            },
+            error: () => this.error = 'La demo no está disponible en este momento.'
         });
     }
 }

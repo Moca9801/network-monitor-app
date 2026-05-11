@@ -8,6 +8,7 @@ import {
     PingResult,
     StatusChange,
     Target,
+    TargetError,
     TargetInput,
     TelegramSettings
 } from '../models/monitoring.models';
@@ -24,6 +25,8 @@ export class SocketService {
     targets$ = this.targetsSubject.asObservable();
     private sitesSubject = new BehaviorSubject<string[]>(['Otros']);
     sites$ = this.sitesSubject.asObservable();
+    private connectionStatusSubject = new BehaviorSubject<'idle' | 'connected' | 'disconnected' | 'error'>('idle');
+    connectionStatus$ = this.connectionStatusSubject.asObservable();
 
     constructor() {
         this.connect();
@@ -41,6 +44,14 @@ export class SocketService {
             auth: { token }
         });
 
+        this.socket.on('connect', () => {
+            this.connectionStatusSubject.next('connected');
+        });
+
+        this.socket.on('disconnect', () => {
+            this.connectionStatusSubject.next('disconnected');
+        });
+
         this.socket.on('initial-targets', (targets: Target[]) => {
             this.targetsSubject.next(targets);
         });
@@ -51,6 +62,7 @@ export class SocketService {
 
         this.socket.on('connect_error', (err) => {
             console.error('Socket connection error:', err.message);
+            this.connectionStatusSubject.next('error');
             if (err.message === 'Token inválido' || err.message === 'Autenticación requerida') {
                 this.authService.logout();
                 window.location.href = '/login';
@@ -98,6 +110,10 @@ export class SocketService {
 
     onSitesUpdated(): Observable<OperationResponse> {
         return this.listen<OperationResponse>('sites-updated');
+    }
+
+    onTargetError(): Observable<TargetError> {
+        return this.listen<TargetError>('target-error');
     }
 
     addTarget(target: TargetInput) {

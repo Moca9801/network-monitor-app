@@ -3,6 +3,7 @@ import { environment } from '../../environments/environment';
 
 interface RuntimeConfig {
     backendUrl?: string;
+    demoMode?: boolean;
 }
 
 @Injectable({
@@ -10,7 +11,8 @@ interface RuntimeConfig {
 })
 export class AppConfigService {
     private config: Required<RuntimeConfig> = {
-        backendUrl: environment.backendUrl
+        backendUrl: environment.backendUrl,
+        demoMode: false
     };
 
     async load() {
@@ -30,5 +32,9 @@ export class AppConfigService {
 
     get backendUrl() {
         return this.config.backendUrl;
+    }
+
+    get demoMode() {
+        return this.config.demoMode;
     }
 }
