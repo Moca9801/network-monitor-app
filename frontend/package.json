@@ -20,6 +20,10 @@
       }
     ]
   },
+  "overrides": {
+    "serialize-javascript": "7.0.5",
+    "tar": "7.5.15"
+  },
   "private": true,
   "packageManager": "npm@11.5.2",
   "dependencies": {
