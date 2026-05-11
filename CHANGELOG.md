@@ -13,6 +13,7 @@ The project follows semantic versioning once formal releases begin.
 - Zod validation, rate limiting and anti-abuse controls for monitored targets.
 - Demo mode with read-only sample data.
 - Backend `/health` endpoint with basic operational metrics.
+- Socket.io integration tests for authenticated target management and demo write blocking.
 - Docker healthchecks and production Compose example.
 - Open source docs: contributing, architecture, troubleshooting, deployment and roadmap.
 - GitHub issue and pull request templates.

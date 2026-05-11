@@ -355,6 +355,13 @@ function startMonitoring(io) {
     monitorInterval = setInterval(runPings, 1000); // 1 second for real-time stats
 }
 
+function stopMonitoring() {
+    if (monitorInterval) {
+        clearInterval(monitorInterval);
+        monitorInterval = null;
+    }
+}
+
 module.exports = {
     clearTargetState,
     getTargets,
@@ -363,5 +370,6 @@ module.exports = {
     saveUserTargets,
     setActiveUsers,
     startMonitoring,
+    stopMonitoring,
     testNotificationForSettings
 };
